@@ -1,15 +1,12 @@
 
-import { Intents, Client, Message, MessageEmbed, Interaction, GuildMember, VoiceChannel } from 'discord.js';
+import { Intents, Client, Interaction, CommandInteraction, GuildMember, VoiceChannel } from 'discord.js';
 import {
     AudioPlayerStatus,
-    AudioResource,
     AudioPlayer,
     entersState,
     joinVoiceChannel,
-    VoiceConnectionStatus,
     VoiceConnection,
     createAudioPlayer,
-    demuxProbe,
     createAudioResource,
     StreamType
 } from '@discordjs/voice';
@@ -21,48 +18,157 @@ class Util {
         const emojis = ['(*´∀`)~♥', 'σ`∀´)σ', '(〃∀〃)', '(శωశ)', '(✪ω✪)', '(๑´ㅂ`๑)', '(◕ܫ◕)', '( • ̀ω•́ )'];
         return emojis[~~(Math.random() * emojis.length)];
     }
+}
 
-    static attach(channel: VoiceChannel): VoiceConnection {
-        return joinVoiceChannel({
-            channelId: channel.id,
-            guildId: channel.guild.id,
-            selfDeaf: true,
-            selfMute: false,
-            adapterCreator: channel.guild.voiceAdapterCreator,
-        });
+class MusicInfo {
+    url: string;
+    title: string;
+    likes: number;
+    viewCount: number;
+
+    constructor(url: string, title: string, likes: number, viewCount: number) {
+        this.url = url;
+        this.title = title;
+        this.likes = likes;
+        this.viewCount = viewCount;
     }
+
+    static fromDetails(detail: any) {
+        if (!detail.videoId) return null;
+        let url = `https://www.youtube.com/watch?v=${detail.videoId}`;
+        let title = detail.title || "";
+        let viewCount = detail.viewCount || -1;
+        let likes = detail.likes || -1;
+        return new MusicInfo(url, title, likes, viewCount);
+    }
+}
+
+class Queue {
+    private _list: Array<MusicInfo>;
+    private _index: number;
+
+    constructor() {
+        this._list = [];
+        this._index = 0;
+    }
+
+    get len(): number {
+        return this._list.length;
+    }
+
+    get current(): MusicInfo {
+        return this._list[this._index];
+    }
+
+    _genericIndex(index: number) {
+        index = index % this.len;
+        return (index < 0) ? index + this.len : index;
+    }
+
+    isEmpty(): boolean {
+        return this.len === 0;
+    }
+
+    en(info: MusicInfo) {
+        this._list.push(info);
+    }
+
+    next(num: number) {
+        return this.jump(this._index + num);
+    }
+
+    // @param index can be any integer.
+    jump(index: number) {
+        if (this.isEmpty()) throw ('播放清單是空的');
+        this._index = this._genericIndex(index);
+        return this._list[this._index];
+    }
+
+    // @param index can be any integer.
+    remove(index: number) {
+        index = this._genericIndex(index);
+        if (index <= this._index) {
+            this._index--;
+        }
+        this._list.splice(index, 1);
+    }
+
+    // showList() returns the list all elements in this queue
+    showList(): string {
+        if (this.isEmpty()) {
+            return '無播放清單';
+        }
+        let content = '';
+        for (const [index, info] of this._list.entries()) {
+            if (index == this._index) {
+                content += `**${index}.\t${info.title}**\n`;
+            } else {
+                content += `${index}.\t${info.title}\n`;
+            }
+        }
+        return content;
+    }
+
+
+    shuffle() {
+        for (let i = 0; i < this.len; i++) {
+            let j = ~~(Math.random() * i);
+            if (i != j && i != this._index && j != this._index) {
+                // swap i and j
+                let tmp = this._list[i]
+                this._list[i] = this._list[j]
+                this._list[j] = tmp
+            }
+        }
+    }
+
+    /*
+        reset() {
+            this.list = [];
+            this.index = 0;
+        }
+    
+        sort() {
+            this.list.sort((a, b) => {
+                return a.title.localeCompare(b.title)
+            });
+        }
+    */
 }
 
 class Bucket {
     id: string;
     connection: VoiceConnection | null;
-    // dispatcher: Discord.StreamDispatcher | null;
-    // queue: Queue;
-    // music: Music;
+    queue: Queue;
     player: AudioPlayer;
-    //playing: boolean;
+    playing: boolean;
     //volume: number;
     //pauseAt: number;
 
     static instant: Map<string, Bucket> = new Map();
-    // 利用 msg.guild.id
+
     constructor(id: string) {
         this.id = id;
         this.connection = null;
         this.player = createAudioPlayer({ debug: true });
-        // this.dispatcher = null;
-        // this.queue = new Queue();
-        // this.music = new Music(msg, this);
-        //this.playing = false;
+        this.queue = new Queue();
+        this.playing = false;
         //this.volume = .64;
         //this.pauseAt = 0;
 
         Bucket.instant.set(this.id, this);
     }
 
-    connect(interaction: Interaction): boolean{
+    connect(interaction: Interaction): boolean {
         if (interaction.member instanceof GuildMember && interaction.member.voice.channel) {
-            this.connection = Util.attach(<VoiceChannel>interaction?.member?.voice?.channel);
+            const channel = <VoiceChannel>interaction?.member?.voice?.channel;
+            this.connection = joinVoiceChannel({
+                channelId: channel.id,
+                guildId: channel.guild.id,
+                selfDeaf: true,
+                selfMute: false,
+                adapterCreator: channel.guild.voiceAdapterCreator,
+            });
             this.connection.subscribe(this.player);
             return true;
         }
@@ -70,9 +176,46 @@ class Bucket {
     }
 
     static find(id: string): Bucket {
-        // 為了避免第一次呼叫他的人消失
-        // Music 內的 msg 必需一直更新
         return Bucket.instant.get(id || "") || new Bucket(id);
+    }
+
+    async play(interaction: CommandInteraction, music: MusicInfo, verbose: boolean = true): Promise<string> {
+        try {
+            // if the user not joinned voice channel yet
+            if (this.connection === null) {
+                this.connect(interaction);
+            }
+
+            const stream = ytdl(music.url, { quality: 'highest', filter: 'audioonly', highWaterMark: 1024 });
+            const resource = createAudioResource(stream, {
+                inputType: StreamType.Arbitrary,
+            });
+            this.player.play(resource);
+
+            console.log(this.player.state);
+
+            await entersState(this.player, AudioPlayerStatus.Playing, 5e3);;
+
+            this.player.on('error', () => {
+                console.log('播放器發生錯誤!');
+                if (this.player.pause()) {
+                    this.player.unpause();
+                }
+            });
+
+            this.player.on('stateChange', (oldState, newState) => {
+                console.log('oldstate:', oldState);
+                console.log('newstate:', newState);
+            });
+
+            this.player.once('unsubscribe', () => {
+                console.log('unsubscribe!');
+            });
+            return music.title;
+        } catch (e) {
+            console.log(e);
+        }
+        return "";
     }
 }
 
@@ -126,13 +269,13 @@ client.on('messageCreate', async (msg) => {
             }, {
                 name: 'stop',
                 description: '停止播放，但不會將 Music Start 踢出語音房',
-            },{
+            }, {
                 name: 'list',
                 description: '列出播放清單'
-            },{
+            }, {
                 name: 'jump',
                 description: '直接跳到播放清單的某一首歌',
-                options:[
+                options: [
                     {
                         name: 'index',
                         type: 'INTEGER',
@@ -154,13 +297,13 @@ client.on('messageCreate', async (msg) => {
             }, {
                 name: 'shuffle',
                 description: '將播放清單隨機打亂，正在播放的歌位置不會受影響'
-            },{
+            }, {
                 name: 'next',
                 description: '播放下一首'
-            },{
+            }, {
                 name: 'pre',
                 description: '播放前一首'
-            },{
+            }, {
                 name: 'vol',
                 description: '設定音量，若不指定 num 則會顯示目前的音量，預設為 0.64',
                 options: [
@@ -191,45 +334,56 @@ client.on('interactionCreate', async (interaction: Interaction) => {
     // 不是所有 interaction 都是 slash command
     if (!interaction.isCommand() || !interaction.guildId) return;
     let bucket = Bucket.find(interaction.guildId);
-    
+
     if (interaction.commandName === 'attach') {
         if (bucket.connect(interaction)) {
             await interaction.reply(`☆歡迎使用 Music Start Pro! ${Util.randomHappy()} ☆`);
-        }else{
+        } else {
             await interaction.reply(`attach 失敗，Musci Start 無法加入語音群`);
         }
-    } else if (interaction.commandName === 'bye'){
+    } else if (interaction.commandName === 'bye') {
         bucket.connection?.destroy();
-    }else if (interaction.commandName === 'play') {
+        await interaction.reply(`ㄅㄅ`);
+    } else if (interaction.commandName === 'play') {
+        await interaction.deferReply();
         const url = interaction.options.get('url')?.value as string;
+        const res = await ytdl.getInfo(url);
+        const info = MusicInfo.fromDetails(res.videoDetails);
+        interaction.editReply(`加入播放清單: ${info?.title}`);
 
-        try {
-            const stream = ytdl(url, { quality: 'highest', filter: 'audioonly', highWaterMark: 1024});
-            const resource = createAudioResource(stream, {
-                inputType: StreamType.Arbitrary,
-            });
-            bucket.player.play(resource);
-            console.log(bucket.player.state);
-            await entersState(bucket.player, AudioPlayerStatus.Playing, 5e3);
-            await interaction.reply(`正在播放: 某某某`);
-        } catch (e) {
-            await interaction.reply(`播放: ${e}`);
-            console.error(e);
+        // 1. enQueue
+        if (info == null) {
+            // TODO
+        } else {
+            bucket.queue.en(info);
         }
-    }else if(interaction.commandName === 'pause'){
-        bucket.player.pause();
-    }else if(interaction.commandName === 'resume'){
-        bucket.player.unpause();
+
+        // 2. if not playing play current
+        await bucket.play(interaction, bucket.queue.current);
+    } else if (interaction.commandName === 'pause') {
+        if (bucket.player.pause()) {
+            await interaction.reply('音樂已暫停');
+        } else {
+            await interaction.reply('音樂暫停失敗，再試一次');
+        }
+    } else if (interaction.commandName === 'resume') {
+        if (bucket.player.unpause()) {
+            await interaction.reply('繼續播放');
+        } else {
+            await interaction.reply('繼續播放失敗，再試一次');
+        }
     } else if (interaction.commandName === 'stop') {
         await interaction.reply(`TODO`);
     } else if (interaction.commandName === 'list') {
-        await interaction.reply(`TODO`);
+        const list = bucket.queue.showList();
+        await interaction.reply(list);
     } else if (interaction.commandName === 'jump') {
         await interaction.reply(`TODO`);
     } else if (interaction.commandName === 'remove') {
         await interaction.reply(`TODO`);
     } else if (interaction.commandName === 'shuffle') {
-        await interaction.reply(`TODO`);
+        bucket.queue.shuffle();
+        await interaction.reply('已將播放清單打亂');
     } else if (interaction.commandName === 'next') {
         await interaction.reply(`TODO`);
     } else if (interaction.commandName === 'pre') {
