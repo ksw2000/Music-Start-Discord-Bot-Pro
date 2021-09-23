@@ -1,5 +1,12 @@
 
-import { Intents, Client, Interaction, CommandInteraction, GuildMember, VoiceChannel } from 'discord.js';
+import {
+    Intents,
+    Client,
+    Interaction,
+    CommandInteraction,
+    GuildMember,
+    VoiceChannel
+} from 'discord.js';
 import {
     AudioPlayerStatus,
     AudioPlayer,
@@ -8,6 +15,7 @@ import {
     VoiceConnection,
     createAudioPlayer,
     createAudioResource,
+    NoSubscriberBehavior,
     StreamType
 } from '@discordjs/voice';
 const token = require('process').env.DiscordToken || require('./token.json').token;
@@ -141,7 +149,6 @@ class Bucket {
     connection: VoiceConnection | null;
     queue: Queue;
     player: AudioPlayer;
-    playing: boolean;
     //volume: number;
     //pauseAt: number;
 
@@ -150,13 +157,16 @@ class Bucket {
     constructor(id: string) {
         this.id = id;
         this.connection = null;
-        this.player = createAudioPlayer({ debug: true });
+        this.player = this.initialPlayer();
         this.queue = new Queue();
-        this.playing = false;
         //this.volume = .64;
         //this.pauseAt = 0;
 
         Bucket.instant.set(this.id, this);
+    }
+
+    get playing(): boolean {
+        return this.player.state.status === 'playing';
     }
 
     connect(interaction: Interaction): boolean {
@@ -179,11 +189,67 @@ class Bucket {
         return Bucket.instant.get(id || "") || new Bucket(id);
     }
 
-    async play(interaction: CommandInteraction, music: MusicInfo, verbose: boolean = true): Promise<string> {
+    initialPlayer(): AudioPlayer {
+        const player = createAudioPlayer({
+            debug: true,
+            behaviors: {
+                noSubscriber: NoSubscriberBehavior.Play,
+            }
+        });
+
+        // https://discordjs.guide/voice/audio-player.html#life-cycle
+        player.on(AudioPlayerStatus.Playing, () => {
+            console.log("playing");
+        });
+
+        player.on(AudioPlayerStatus.Buffering, () => {
+            console.log("buffering");
+        });
+
+        player.on(AudioPlayerStatus.AutoPaused, () => {
+            console.log("autoPaused");
+        });
+
+        player.on(AudioPlayerStatus.Paused, () => {
+            console.log("paused");
+        });
+
+        player.on(AudioPlayerStatus.Idle, () => {
+            console.log("idle");
+        });
+
+        player.on('error', () => {
+            console.log('播放器發生錯誤!');
+        });
+
+        player.on('stateChange', (oldState, newState) => {
+            if (newState.status === AudioPlayerStatus.Idle && oldState.status !== AudioPlayerStatus.Idle) {
+                // If the Idle state is entered from a non-Idle state, it means that an audio resource has finished playing.
+                // The queue is then processed to start playing the next track, if one is available.
+                // onfinish
+                this.queue.next(1);
+                this.play(this.queue.current, null);
+                console.log('onfinish');
+            } else if (newState.status === AudioPlayerStatus.Playing) {
+                // If the Playing state has been entered, then a new track has started playback.
+                // onstart
+                console.log('onstart');
+            }
+        });
+
+        return player;
+    }
+
+    // @param interaction: when the discrod user call play() interaction is non null, else is null
+    async play(music: MusicInfo, interaction: CommandInteraction | null): Promise<string> {
         try {
             // if the user not joinned voice channel yet
             if (this.connection === null) {
-                this.connect(interaction);
+                if (interaction) {
+                    this.connect(interaction)
+                } else {
+                    throw ('機器人尚未進入語音頻道');
+                }
             }
 
             const stream = ytdl(music.url, { quality: 'highest', filter: 'audioonly', highWaterMark: 1024 });
@@ -192,25 +258,7 @@ class Bucket {
             });
             this.player.play(resource);
 
-            console.log(this.player.state);
-
-            await entersState(this.player, AudioPlayerStatus.Playing, 5e3);;
-
-            this.player.on('error', () => {
-                console.log('播放器發生錯誤!');
-                if (this.player.pause()) {
-                    this.player.unpause();
-                }
-            });
-
-            this.player.on('stateChange', (oldState, newState) => {
-                console.log('oldstate:', oldState);
-                console.log('newstate:', newState);
-            });
-
-            this.player.once('unsubscribe', () => {
-                console.log('unsubscribe!');
-            });
+            await entersState(this.player, AudioPlayerStatus.Playing, 5e3)
             return music.title;
         } catch (e) {
             console.log(e);
@@ -349,17 +397,19 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         const url = interaction.options.get('url')?.value as string;
         const res = await ytdl.getInfo(url);
         const info = MusicInfo.fromDetails(res.videoDetails);
-        interaction.editReply(`加入播放清單: ${info?.title}`);
 
         // 1. enQueue
-        if (info == null) {
-            // TODO
-        } else {
+        if (info) {
             bucket.queue.en(info);
+            interaction.editReply(`加入播放清單: ${info.title}`);
+        } else {
+            interaction.editReply(`無該歌曲`);
         }
 
-        // 2. if not playing play current
-        await bucket.play(interaction, bucket.queue.current);
+        // 2. play if the player is not playing
+        if (!bucket.playing) {
+            await bucket.play(bucket.queue.current, interaction);
+        }
     } else if (interaction.commandName === 'pause') {
         if (bucket.player.pause()) {
             await interaction.reply('音樂已暫停');
