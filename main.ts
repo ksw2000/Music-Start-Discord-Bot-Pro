@@ -1,11 +1,22 @@
-
+/**
+ * Developer: kashiwa
+ * 
+ * Document
+ * Discord.js v13.0.1
+ * https://discord.js.org/#/docs/discord.js/13.0.1/general/welcome
+ * 
+ * discordjs/voice.js v0.5.6
+ * https://www.npmjs.com/package/@discordjs/voice/v/0.5.6
+ */
 import {
     Intents,
     Client,
     Interaction,
     CommandInteraction,
     GuildMember,
-    VoiceChannel
+    VoiceChannel,
+    MessageOptions,
+    MessageEmbed
 } from 'discord.js';
 import {
     AudioPlayerStatus,
@@ -16,7 +27,8 @@ import {
     createAudioPlayer,
     createAudioResource,
     NoSubscriberBehavior,
-    StreamType
+    StreamType,
+    DiscordGatewayAdapterCreator
 } from '@discordjs/voice';
 const token = require('process').env.DiscordToken || require('./token.json').token;
 import ytdl from 'ytdl-core';
@@ -25,6 +37,39 @@ class Util {
     static randomHappy() {
         const emojis = ['(*´∀`)~♥', 'σ`∀´)σ', '(〃∀〃)', '(శωశ)', '(✪ω✪)', '(๑´ㅂ`๑)', '(◕ܫ◕)', '( • ̀ω•́ )'];
         return emojis[~~(Math.random() * emojis.length)];
+    }
+
+    // @param num: Integer
+    static humanReadNum(num: number): string{
+        try{
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }catch(e){
+            throw(e);
+        }
+    }
+
+    // createEmbedMessage()
+    static createEmbedMessage(title: string, description: string): MessageOptions{
+        return {
+            embeds: [new MessageEmbed()
+                .setTitle(title)
+                .setColor(0x33DFFF)
+                .setDescription(description)]
+        };
+    }
+
+    static createMusicInfoMessage(info: MusicInfo): MessageOptions{
+        let description = `From youtube: ${info.url}\n\n`;
+        if (info.viewCount != -1) {
+            description += `:eyes:　${Util.humanReadNum(info.viewCount)}`;
+        }
+        if (info.likes != -1) {
+            if (info.likes != -1) {
+                description += '　';
+            }
+            description += `:heart:　${Util.humanReadNum(info.likes)}`;
+        }
+        return Util.createEmbedMessage(info?.title, description);
     }
 }
 
@@ -150,6 +195,7 @@ class Queue {
 class Bucket {
     id: string;
     connection: VoiceConnection | null;
+    interaction: CommandInteraction | Interaction | null;
     queue: Queue;
     player: AudioPlayer;
     playerErrorLock: boolean;   // set true when player is error
@@ -161,6 +207,7 @@ class Bucket {
     constructor(id: string) {
         this.id = id;
         this.connection = null;
+        this.interaction = null;
         this.player = this.initialPlayer();
         this.queue = new Queue();
         this.playerErrorLock = false;
@@ -175,6 +222,7 @@ class Bucket {
     }
 
     connect(interaction: Interaction): boolean {
+        this.interaction = interaction;
         if (interaction.member instanceof GuildMember && interaction.member.voice.channel) {
             const channel = <VoiceChannel>interaction?.member?.voice?.channel;
             this.connection = joinVoiceChannel({
@@ -182,7 +230,7 @@ class Bucket {
                 guildId: channel.guild.id,
                 selfDeaf: true,
                 selfMute: false,
-                adapterCreator: channel.guild.voiceAdapterCreator,
+                adapterCreator: channel.guild.voiceAdapterCreator as DiscordGatewayAdapterCreator
             });
             this.connection.subscribe(this.player);
             return true;
@@ -235,8 +283,12 @@ class Bucket {
         player.on('error', () => {
             console.log('播放器發生錯誤!');
             this.playerErrorLock = true;
+            this.interaction?.channel?.send('播放器發生錯誤 (´Ａ｀。) 自動修復中...');
         });
 
+        // this block handle
+        // (1) player error
+        // (2) play next song when player finished
         player.on('stateChange', (oldState, newState) => {
             // onfinish()
             if (newState.status === AudioPlayerStatus.Idle && oldState.status !== AudioPlayerStatus.Idle) {
@@ -251,7 +303,9 @@ class Bucket {
                     // real finish()
                 } else {
                     this.queue.next(1);
-                    this.play(this.queue.current, null);
+                    this.play(this.queue.current, this.interaction).then(()=>{
+                        this.interaction?.channel?.send(Util.createMusicInfoMessage(this.queue.current));
+                    });
                     console.log('onfinish');
                 }
                 this.playerErrorLock = false;
@@ -265,13 +319,14 @@ class Bucket {
         return player;
     }
 
-    // @param interaction: when the discrod user call play() interaction is non null, else is null
-    async play(music: MusicInfo, interaction: CommandInteraction | null): Promise<string> {
+    // play() will play a music.
+    // @param interaction: when the discord user calls play() interaction is non null, else is null
+    async play(music: MusicInfo, interaction: Interaction | CommandInteraction | null): Promise<void> {
         try {
-            // if the user not joinned voice channel yet
+            // if the user not joined voice channel yet
             if (this.connection === null) {
                 if (interaction) {
-                    this.connect(interaction)
+                    this.connect(interaction);
                 } else {
                     throw ('機器人尚未進入語音頻道');
                 }
@@ -287,29 +342,26 @@ class Bucket {
                 inputType: StreamType.Arbitrary,
             });
             this.player.play(resource);
-
-            await entersState(this.player, AudioPlayerStatus.Playing, 5e3)
-            return music.title;
+            await entersState(this.player, AudioPlayerStatus.Playing, 5e3);
         } catch (e) {
             console.log(e);
         }
-        return "";
     }
 }
 
 
-const client = new Client({
+const client: Client = new Client({
     intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES]
 });
 
-client.once('ready', (client) => {
+client.once('ready', (client: any) => {
     console.log(`Logged in as ${client.user?.tag}!`);
 });
 
 // 游庭瑋：guild 就是指 discord 裡的一個群組(伺服器)
 // 嗯~漲知識了
 
-client.once('guildCreate', async (guild)=>{
+client.once('guildCreate', async (guild: any)=>{
     const descriptionIndex = 'index 為播放清單的編號，由 0 開始，若 index 為負數則由清單最末尾開始計數，也就是說 -1 表示清單最後一首，若數字超過播放清單長度，則系統會啟用溢位';
     await guild.commands.set([
         {
@@ -396,13 +448,16 @@ client.once('guildCreate', async (guild)=>{
                     required: true
                 }
             ]
+        }, {
+            name: 'help',
+            description: '顯示操作資訊',
         }
     ]);
 });
 
 client.login(token);
 
-client.on('error', (e) => {
+client.on('error', (e: any) => {
     console.log('client on error', e);
 });
 
@@ -415,11 +470,12 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         if (bucket.connect(interaction)) {
             await interaction.reply(`☆歡迎使用 Music Start Pro! ${Util.randomHappy()} ☆`);
         } else {
-            await interaction.reply(`attach 失敗，Music Start Pro 無法加入語音群`);
+            await interaction.reply(`attach 失敗( ´•̥×•̥\`)，Music Start Pro 無法加入語音群。請確定您已經進入語音頻道。`);
         }
+        //interaction.channel?.send("幹你娘");
     } else if (interaction.commandName === 'bye') {
         bucket.connection?.destroy();
-        await interaction.reply(`ㄅㄅ`);
+        await interaction.reply(`ㄅㄅ ◑ω◐`);
     } else if (interaction.commandName === 'play') {
         await interaction.deferReply();
         const url = interaction.options.get('url')?.value as string;
@@ -427,17 +483,17 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         const info = MusicInfo.fromDetails(res.videoDetails);
 
         // 1. enQueue
-        if (info) {
+        if (info !== null) {
             bucket.queue.en(info);
             interaction.editReply(`加入播放清單: ${info.title}`);
         } else {
-            interaction.editReply(`無該歌曲`);
+            interaction.editReply(`無該歌曲 இдஇ`);
         }
 
         // 2. play if the player is not playing
         if (!bucket.playing) {
-            bucket.play(bucket.queue.current, interaction).then(musicTitle => {
-                interaction.followUp(`播放: ${musicTitle}`);
+            bucket.play(bucket.queue.current, interaction).then(() => {
+                interaction.editReply(Util.createMusicInfoMessage(bucket.queue.current));
             });
         }
     } else if (interaction.commandName === 'pause') {
@@ -456,40 +512,42 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         await interaction.reply(`TODO`);
     } else if (interaction.commandName === 'list') {
         const list = bucket.queue.showList();
-        await interaction.reply(list);
+        await interaction.reply(Util.createEmbedMessage('播放清單', list));
     } else if (interaction.commandName === 'jump') {
         await interaction.deferReply();
         const index = interaction.options.get('index')?.value as number;
         bucket.queue.jump(index);
-        bucket.play(bucket.queue.current, interaction).then(musicTitle => {
-            interaction.editReply(`播放: ${musicTitle}`);
+        bucket.play(bucket.queue.current, interaction).then(() => {
+            interaction.editReply(Util.createMusicInfoMessage(bucket.queue.current));
         });
     } else if (interaction.commandName === 'remove') {
         const index = interaction.options.get('index')?.value as number;
         // if remove success
         if (bucket.queue.remove(index, bucket.playing)) {
-            await interaction.reply('該曲移除成功');
+            await interaction.reply('該曲移除成功 (灬ºωº灬)');
         } else {
-            await interaction.reply('正在播放不可移除');
+            await interaction.reply('正在播放不可移除 <(_ _)>');
         }
     } else if (interaction.commandName === 'shuffle') {
         bucket.queue.shuffle();
-        await interaction.reply('已將播放清單打亂');
+        await interaction.reply('已將播放清單打亂 (*ﾟ∀ﾟ*)');
     } else if (interaction.commandName === 'next') {
         await interaction.deferReply();
         bucket.queue.next(1);
-        bucket.play(bucket.queue.current, interaction).then(musicTitle => {
-            interaction.editReply(`播放: ${musicTitle}`);
+        bucket.play(bucket.queue.current, interaction).then(() => {
+            interaction.editReply(Util.createMusicInfoMessage(bucket.queue.current));
         });
     } else if (interaction.commandName === 'pre') {
         await interaction.deferReply();
         bucket.queue.next(-1);
-        bucket.play(bucket.queue.current, interaction).then(musicTitle => {
-            interaction.editReply(`播放: ${musicTitle}`);
+        bucket.play(bucket.queue.current, interaction).then(() => {
+            interaction.editReply(Util.createMusicInfoMessage(bucket.queue.current));
         });
     } else if (interaction.commandName === 'vol') {
         await interaction.reply(`TODO`);
     } else if (interaction.commandName === 'seek') {
+        await interaction.reply(`TODO`);
+    } else if (interaction.commandName === 'help') {
         await interaction.reply(`TODO`);
     }
 })
