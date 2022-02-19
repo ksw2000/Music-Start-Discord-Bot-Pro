@@ -93,12 +93,15 @@ class Queue {
     }
 
     // @param index can be any integer.
-    remove(index: number) {
+    // @return true if success vice versa.
+    remove(index: number, isNowPlaying: boolean): boolean {
         index = this._genericIndex(index);
+        if (index == this._index && isNowPlaying) return false;
         if (index <= this._index) {
             this._index--;
         }
         this._list.splice(index, 1);
+        return true;
     }
 
     // showList() returns the list all elements in this queue
@@ -149,6 +152,7 @@ class Bucket {
     connection: VoiceConnection | null;
     queue: Queue;
     player: AudioPlayer;
+    playerErrorLock: boolean;   // set true when player is error
     //volume: number;
     //pauseAt: number;
 
@@ -159,6 +163,7 @@ class Bucket {
         this.connection = null;
         this.player = this.initialPlayer();
         this.queue = new Queue();
+        this.playerErrorLock = false;
         //this.volume = .64;
         //this.pauseAt = 0;
 
@@ -218,21 +223,41 @@ class Bucket {
             console.log("idle");
         });
 
+        /**
+         * 當播放器錯誤發生時，state會依序進入以下狀態:
+         * 1. onError
+         * 2. buffering
+         * 3. onFinish
+         * Thus, we can set playerErrorLock to be `true` and fix error in the state of `onFinish`
+         * Then, set playerErrorLock to be `false`
+         */
+
         player.on('error', () => {
             console.log('播放器發生錯誤!');
+            this.playerErrorLock = true;
         });
 
         player.on('stateChange', (oldState, newState) => {
+            // onfinish()
             if (newState.status === AudioPlayerStatus.Idle && oldState.status !== AudioPlayerStatus.Idle) {
                 // If the Idle state is entered from a non-Idle state, it means that an audio resource has finished playing.
                 // The queue is then processed to start playing the next track, if one is available.
-                // onfinish
-                this.queue.next(1);
-                this.play(this.queue.current, null);
-                console.log('onfinish');
+
+                // fake finish()
+                if (this.playerErrorLock) {
+                    console.log('修復播放器');
+                    // TODO
+                    console.log('Not finish but actually onError');
+                    // real finish()
+                } else {
+                    this.queue.next(1);
+                    this.play(this.queue.current, null);
+                    console.log('onfinish');
+                }
+                this.playerErrorLock = false;
+                // onstart()
             } else if (newState.status === AudioPlayerStatus.Playing) {
                 // If the Playing state has been entered, then a new track has started playback.
-                // onstart
                 console.log('onstart');
             }
         });
@@ -252,7 +277,12 @@ class Bucket {
                 }
             }
 
-            const stream = ytdl(music.url, { quality: 'highest', filter: 'audioonly', highWaterMark: 1024 });
+            const stream = ytdl(music.url, {
+                quality: 'highest',
+                filter: 'audioonly',
+                highWaterMark: 1024,
+            });
+
             const resource = createAudioResource(stream, {
                 inputType: StreamType.Arbitrary,
             });
@@ -272,110 +302,108 @@ const client = new Client({
     intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES]
 });
 
-client.once('ready', () => {
+client.once('ready', (client) => {
     console.log(`Logged in as ${client.user?.tag}!`);
+});
+
+// 游庭瑋：guild 就是指 discord 裡的一個群組(伺服器)
+// 嗯~漲知識了
+
+client.once('guildCreate', async (guild)=>{
+    const descriptionIndex = 'index 為播放清單的編號，由 0 開始，若 index 為負數則由清單最末尾開始計數，也就是說 -1 表示清單最後一首，若數字超過播放清單長度，則系統會啟用溢位';
+    await guild.commands.set([
+        {
+            name: 'attach',
+            description: '將 Music Start 加入您目前所在的語音房中'
+        },
+        {
+            name: 'bye',
+            description: '將 Music Start 踢出語音房'
+        },
+        {
+            name: 'play',
+            description: '播放音樂，若音樂正在播放，則會加入播放清單。若 Music Start 不在語音房中，則會自動呼叫 attach',
+            options: [
+                {
+                    name: 'url',
+                    type: 'STRING',
+                    description: '參數為 Youtube 連結',
+                    required: true,
+                }
+            ]
+        }, {
+            name: 'pause',
+            description: '音樂暫停播放',
+        }, {
+            name: 'resume',
+            description: '音樂繼續暫停',
+        }, {
+            name: 'stop',
+            description: '停止播放，但不會將 Music Start 踢出語音房',
+        }, {
+            name: 'list',
+            description: '列出播放清單'
+        }, {
+            name: 'jump',
+            description: '直接跳到播放清單的某一首歌',
+            options: [
+                {
+                    name: 'index',
+                    type: 'INTEGER',
+                    description: descriptionIndex,
+                    required: true
+                }
+            ]
+        }, {
+            name: 'remove',
+            description: '直接刪除播放清單的某一首歌',
+            options: [
+                {
+                    name: 'index',
+                    type: 'INTEGER',
+                    description: descriptionIndex,
+                    required: true
+                }
+            ]
+        }, {
+            name: 'shuffle',
+            description: '將播放清單隨機打亂，正在播放的歌位置不會受影響'
+        }, {
+            name: 'next',
+            description: '播放下一首'
+        }, {
+            name: 'pre',
+            description: '播放前一首'
+        }, {
+            name: 'vol',
+            description: '設定音量，若不指定 num 則會顯示目前的音量，預設為 0.64',
+            options: [
+                {
+                    name: 'num',
+                    type: 'NUMBER',
+                    description: '音量介於閉區間 [0, 1]',
+                    required: true
+                }
+            ]
+        }, {
+            name: 'seek',
+            description: '跳到歌曲的某個時間點',
+            options: [
+                {
+                    name: 'time',
+                    type: 'STRING',
+                    description: '以 : 為60進位分割符',
+                    required: true
+                }
+            ]
+        }
+    ]);
 });
 
 client.login(token);
 
 client.on('error', (e) => {
-    console.log(e);
-})
-
-client.on('messageCreate', async (msg) => {
-    // 如果發送訊息的地方不是語音群（可能是私人），就 return
-    if (!msg.guild) return;
-    if (!client.application?.owner) await client.application?.fetch();
-    const descriptionIndex = 'index 為播放清單的編號，由 0 開始，若 index 為負數則由清單最末尾開始計數，也就是說 -1 表示清單最後一首，若數字超過播放清單長度，則系統會啟用溢位';
-    if (msg.content.toLowerCase() === 'music start') {
-        await msg.guild.commands.set([
-            {
-                name: 'attach',
-                description: '將 Music Start 加入您目前所在的語音房中'
-            },
-            {
-                name: 'bye',
-                description: '將 Music Start 踢出語音房'
-            },
-            {
-                name: 'play',
-                description: '播放音樂，若音樂正在播放，則會加入播放清單。若 Music Start 不在語音房中，則會自動呼叫 attach',
-                options: [
-                    {
-                        name: 'url',
-                        type: 'STRING',
-                        description: '參數為 Youtube 連結',
-                        required: true,
-                    }
-                ]
-            }, {
-                name: 'pause',
-                description: '音樂暫停播放',
-            }, {
-                name: 'resume',
-                description: '音樂繼續暫停',
-            }, {
-                name: 'stop',
-                description: '停止播放，但不會將 Music Start 踢出語音房',
-            }, {
-                name: 'list',
-                description: '列出播放清單'
-            }, {
-                name: 'jump',
-                description: '直接跳到播放清單的某一首歌',
-                options: [
-                    {
-                        name: 'index',
-                        type: 'INTEGER',
-                        description: descriptionIndex,
-                        required: true
-                    }
-                ]
-            }, {
-                name: 'remove',
-                description: '直接刪除播放清單的某一首歌',
-                options: [
-                    {
-                        name: 'index',
-                        type: 'INTEGER',
-                        description: descriptionIndex,
-                        required: true
-                    }
-                ]
-            }, {
-                name: 'shuffle',
-                description: '將播放清單隨機打亂，正在播放的歌位置不會受影響'
-            }, {
-                name: 'next',
-                description: '播放下一首'
-            }, {
-                name: 'pre',
-                description: '播放前一首'
-            }, {
-                name: 'vol',
-                description: '設定音量，若不指定 num 則會顯示目前的音量，預設為 0.64',
-                options: [
-                    {
-                        name: 'num',
-                        type: 'NUMBER',
-                        description: '音量介於閉區間 [0, 1]',
-                        required: true
-                    }
-                ]
-            }, {
-                name: 'seek',
-                description: '跳到歌曲的某個時間點',
-                options: [
-                    {
-                        name: 'time',
-                        type: 'STRING',
-                        description: '以 : 為60進位分割符',
-                        required: true
-                    }
-                ]
-            }
-        ]);
-    }
+    console.log('client on error', e);
 });
 
 client.on('interactionCreate', async (interaction: Interaction) => {
@@ -387,7 +415,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         if (bucket.connect(interaction)) {
             await interaction.reply(`☆歡迎使用 Music Start Pro! ${Util.randomHappy()} ☆`);
         } else {
-            await interaction.reply(`attach 失敗，Musci Start 無法加入語音群`);
+            await interaction.reply(`attach 失敗，Music Start Pro 無法加入語音群`);
         }
     } else if (interaction.commandName === 'bye') {
         bucket.connection?.destroy();
@@ -408,11 +436,13 @@ client.on('interactionCreate', async (interaction: Interaction) => {
 
         // 2. play if the player is not playing
         if (!bucket.playing) {
-            await bucket.play(bucket.queue.current, interaction);
+            bucket.play(bucket.queue.current, interaction).then(musicTitle => {
+                interaction.followUp(`播放: ${musicTitle}`);
+            });
         }
     } else if (interaction.commandName === 'pause') {
         if (bucket.player.pause()) {
-            await interaction.reply('音樂已暫停');
+            await interaction.reply('音樂已暫停，輸入 /resume 已繼續');
         } else {
             await interaction.reply('音樂暫停失敗，再試一次');
         }
@@ -420,7 +450,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         if (bucket.player.unpause()) {
             await interaction.reply('繼續播放');
         } else {
-            await interaction.reply('繼續播放失敗，再試一次');
+            await interaction.reply('繼續播放失敗，可使用 /jump 來重新播放');
         }
     } else if (interaction.commandName === 'stop') {
         await interaction.reply(`TODO`);
@@ -428,16 +458,35 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         const list = bucket.queue.showList();
         await interaction.reply(list);
     } else if (interaction.commandName === 'jump') {
-        await interaction.reply(`TODO`);
+        await interaction.deferReply();
+        const index = interaction.options.get('index')?.value as number;
+        bucket.queue.jump(index);
+        bucket.play(bucket.queue.current, interaction).then(musicTitle => {
+            interaction.editReply(`播放: ${musicTitle}`);
+        });
     } else if (interaction.commandName === 'remove') {
-        await interaction.reply(`TODO`);
+        const index = interaction.options.get('index')?.value as number;
+        // if remove success
+        if (bucket.queue.remove(index, bucket.playing)) {
+            await interaction.reply('該曲移除成功');
+        } else {
+            await interaction.reply('正在播放不可移除');
+        }
     } else if (interaction.commandName === 'shuffle') {
         bucket.queue.shuffle();
         await interaction.reply('已將播放清單打亂');
     } else if (interaction.commandName === 'next') {
-        await interaction.reply(`TODO`);
+        await interaction.deferReply();
+        bucket.queue.next(1);
+        bucket.play(bucket.queue.current, interaction).then(musicTitle => {
+            interaction.editReply(`播放: ${musicTitle}`);
+        });
     } else if (interaction.commandName === 'pre') {
-        await interaction.reply(`TODO`);
+        await interaction.deferReply();
+        bucket.queue.next(-1);
+        bucket.play(bucket.queue.current, interaction).then(musicTitle => {
+            interaction.editReply(`播放: ${musicTitle}`);
+        });
     } else if (interaction.commandName === 'vol') {
         await interaction.reply(`TODO`);
     } else if (interaction.commandName === 'seek') {
