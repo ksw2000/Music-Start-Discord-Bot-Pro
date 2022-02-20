@@ -6,11 +6,11 @@
   "dependencies": {
     "tweetnacl": "^1.0.3",
     "opusscript": "^0.0.7",
-    "@discordjs/voice": "^0.5.6",
+    "@discordjs/voice": "^0.8.0",
     "@types/node": "^16.4.13",
-    "discord.js": "^13.0.1",
+    "discord.js": "^13.6.0",
     "typescript": "^4.3.5",
-    "ytdl-core": "^4.9.1"
+    "ytdl-core": "^4.10.1"
   },
   "scripts": {
     "start": "npx ts-node main.ts"
@@ -18,6 +18,6 @@
   "author": "Kashiwa",
   "license": "MIT",
   "engines": {
-    "node": ">=16.0"
+    "node": ">=17.0"
   }
 }
