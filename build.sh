@@ -1,3 +1,3 @@
-#!/usr/bash
+#!/bin/bash
 npm install
 npm i ffmpeg-static
