@@ -46,11 +46,9 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         } else {
             await interaction.reply(`attach 失敗${Util.randomCry()}，Music Start Pro 無法加入語音群。請確定您已經進入語音頻道。`);
         }
-
-        //interaction.channel?.send("幹你娘");
     } else if (interaction.commandName === 'bye') {
         bucket.destroyConnection();
-        await interaction.reply(`ㄅㄅ ◑ω◐`);
+        await interaction.reply(`ㄅㄅ ${Util.randomHappy()}`);
     } else if (interaction.commandName === 'play') {
         await interaction.deferReply();
         const url = interaction.options.get('url')?.value as string;
@@ -75,7 +73,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         }
     } else if (interaction.commandName === 'pause') {
         if (bucket.player.pause()) {
-            await interaction.reply('音樂已暫停，輸入 /resume 已繼續');
+            await interaction.reply('音樂已暫停 /resume 已繼續');
         } else {
             await interaction.reply(Util.createEmbedMessage('錯誤', '音樂暫停失敗，再試一次', true));
         }
@@ -104,7 +102,17 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         } else {
             await interaction.reply(Util.createEmbedMessage('錯誤', '正在播放不可移除 <(_ _)>', true));
         }
-    } else if (interaction.commandName === 'shuffle') {
+    } else if (interaction.commandName === 'clear') {
+        if(bucket.playing){
+            bucket.player.stop();
+        }
+        bucket.queue.removeAll();
+        interaction.editReply(`已清空播放清單!`);
+    } else if (interaction.commandName === 'sort') {
+        bucket.queue.sort();
+        const list = bucket.queue.showList();
+        await interaction.reply(Util.createEmbedMessage('播放清單', list));
+    }else if (interaction.commandName === 'shuffle') {
         bucket.queue.shuffle();
         await interaction.reply(`已將播放清單打亂 ${Util.randomHappy()}`);
     } else if (interaction.commandName === 'next') {

@@ -109,6 +109,12 @@ export class Util {
                     }
                 ]
             }, {
+                name: 'clear',
+                description: '清空播放清單'
+            }, {
+                name: 'sort',
+                description: '排序播放清單'
+            }, {
                 name: 'shuffle',
                 description: '將播放清單隨機打亂，正在播放的歌位置不會受影響'
             }, {

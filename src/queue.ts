@@ -40,9 +40,8 @@ export class Queue {
 
     // @param index can be any integer.
     jump(index: number) {
-        if (this.isEmpty()) throw ('播放清單是空的');
+        if (this.isEmpty()) return;
         this._index = this._genericIndex(index);
-        return this._list[this._index];
     }
 
     // @param index can be any integer.
@@ -55,6 +54,28 @@ export class Queue {
         }
         this._list.splice(index, 1);
         return true;
+    }
+
+    removeAll(){
+        this._list = [];
+    }
+
+    sort(){
+        this.list.sort((a, b) => {
+            return a.title.localeCompare(b.title)
+        });
+    }
+
+    shuffle() {
+        for (let i = 0; i < this.len; i++) {
+            let j = ~~(Math.random() * i);
+            if (i != j && i != this._index && j != this._index) {
+                // swap i and j
+                let tmp = this._list[i]
+                this._list[i] = this._list[j]
+                this._list[j] = tmp
+            }
+        }
     }
 
     // showList() returns the list all elements in this queue
@@ -71,18 +92,5 @@ export class Queue {
             }
         }
         return content;
-    }
-
-
-    shuffle() {
-        for (let i = 0; i < this.len; i++) {
-            let j = ~~(Math.random() * i);
-            if (i != j && i != this._index && j != this._index) {
-                // swap i and j
-                let tmp = this._list[i]
-                this._list[i] = this._list[j]
-                this._list[j] = tmp
-            }
-        }
     }
 }
