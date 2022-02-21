@@ -2,12 +2,12 @@
 
 1. `/attach` 將 Music Start Pro 加入您目前所在的語音房中，另外，當 Music Start Pro 更新新的指令時，可刷新指令集
 2. `/bye` 將 Music Start 踢出語音房
-3. `/play [url]` 播放音樂，若音樂正在播放，則會加入播放清單。若 Music Start 不在語音房中，則會自動呼叫 `/attach`
+3. `/play [url]` 播放音樂，若音樂正在播放，則會加入播放清單。若 Music Start Pro 不在語音房中，則會自動呼叫 `/attach` 加入您目前所在的語音房
 4. `/pause` 暫停或播放
-5. `/stop` 停止播放，但不會將 Music Start 踢出語音房
+5. `/stop` 停止播放，但不會將 Music Start Pro 踢出語音房
 6. `/list` 列出播放清單
-7. `/jump [index]` 直接跳到播放清單的某一首歌
-8. `/remove [index]` 直接刪除播放清單的某一首歌
+7. `/jump [index]` 指定跳到播放清單的某一首歌
+8. `/remove [index]` 指定刪除播放清單的某一首歌
 9. `/shuffle` 將播放清單隨機打亂，正在播放的歌位置不會受影響
 10. `/next` 播放下一首
 11. `/pre` 播放前一首

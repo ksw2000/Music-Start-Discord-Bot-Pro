@@ -53,19 +53,19 @@ export class Util {
 
     static async registerCommand(guild: Guild | null) {
         if (guild == null) return;
-        const descriptionIndex = 'index 為播放清單的編號，由 0 開始，若 index 為負數則由清單最末尾開始計數，也就是說 -1 表示清單最後一首，若數字超過播放清單長度，則系統會啟用溢位';
+        const descriptionIndex = 'index 為播放清單的編號，由 0 開始，若 index 為負數則由清單最末尾開始計數，也就是說 -1 表示清單最後一首，若數字超過播放清單長度，則系統會自動取餘';
         await guild.commands.set([
             {
                 name: 'attach',
-                description: '將 Music Start Pro 加入您目前所在的語音房中，另外，當 Music Start Pro 更新新的指令時，可刷新指令集'
+                description: '將 Music Start Pro 加入您目前所在的語音房中，另外，當 Music Start Pro 更新指令時，可刷新指令集'
             },
             {
                 name: 'bye',
-                description: '將 Music Start 踢出語音房'
+                description: '將 Music Start Pro 踢出語音房'
             },
             {
                 name: 'play',
-                description: '播放音樂，若音樂正在播放，則會加入播放清單。若 Music Start 不在語音房中，則會自動呼叫 attach',
+                description: '播放音樂，若音樂正在播放，則會加入播放清單。若 Music Start Pro 不在語音房中，則會自動呼叫 /attach 加入您目前所在的語音房',
                 options: [
                     {
                         name: 'url',
@@ -99,7 +99,7 @@ export class Util {
                 ]
             }, {
                 name: 'remove',
-                description: '直接刪除播放清單的某一首歌',
+                description: '指定刪除播放清單的某一首歌',
                 options: [
                     {
                         name: 'index',
