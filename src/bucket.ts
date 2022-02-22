@@ -29,16 +29,15 @@ export class Bucket {
     private connection: VoiceConnection | null = null;
     private interaction: CommandInteraction | Interaction | null = null;
     private resource: AudioResource | null = null;
-    readonly queue: Queue = new Queue();
-    readonly player: AudioPlayer = this.initialPlayer();
+    public player: AudioPlayer = this.createPlayer();
     private _playerErrorLock: boolean = false;   // set true when player is error
     private _playerVolume: number = .64;
+    readonly queue: Queue = new Queue();
 
     static instant: Map<string, Bucket> = new Map();
 
     constructor(id: string) {
         this.id = id;
-
         Bucket.instant.set(this.id, this);
     }
 
@@ -67,7 +66,7 @@ export class Bucket {
         return false;
     }
 
-    initialPlayer(): AudioPlayer {
+    createPlayer(): AudioPlayer {
         const player = createAudioPlayer({
             debug: true,
             behaviors: {
@@ -101,8 +100,8 @@ export class Bucket {
          * 1. onError
          * 2. buffering
          * 3. onFinish
-         * Thus, we can set playerErrorLock to be `true` and fix error in the state of `onFinish`
-         * Then, set playerErrorLock to be `false`
+         * Thus, we can set _playerErrorLock to be `true` and fix error in the state of `onFinish`
+         * Then, set _playerErrorLock to be `false`
          */
 
         player.on('error', (error) => {
@@ -111,7 +110,7 @@ export class Bucket {
             console.log(error.name);
             console.log(error.stack);
             this._playerErrorLock = true;
-            this.interaction?.channel?.send(Util.createEmbedMessage('錯誤', '播放器發生錯誤 (´Ａ｀。)，為您播放下一首', true));
+            this.interaction?.channel?.send(Util.createEmbedMessage('錯誤', `播放器發生錯誤 ${Util.randomCry()}`, true));
         });
 
         // this block handles
@@ -126,20 +125,19 @@ export class Bucket {
                 if (this._playerErrorLock) {
                     console.log('onfinish (error)');
                     // fake finish() i.e., error occurred
-                    if (this.resource != null) {
-                        console.log('修復播放器');
-                        console.log('play duration', this.resource!.playbackDuration);
-                    }
+                    console.log('重置播放器');
+                    this.player = this.createPlayer();
                 } else {
                     // real finish()
                     console.log('onfinish (success)');
+                    this.queue.next(1);
+                    this.play(this.queue.current, this.interaction).then(() => {
+                        this.interaction?.channel?.send(Util.createMusicInfoMessage(this.queue.current));
+                    }).catch(e => {
+                        this.interaction?.channel?.send(Util.createEmbedMessage('錯誤', `${e}`, true));
+                    });
                 }
-                this.queue.next(1);
-                this.play(this.queue.current, this.interaction).then(() => {
-                    this.interaction?.channel?.send(Util.createMusicInfoMessage(this.queue.current));
-                }).catch(e => {
-                    this.interaction?.channel?.send(Util.createEmbedMessage('錯誤', `${e}`, true));
-                });
+                
                 this._playerErrorLock = false;
             } else if (newState.status === AudioPlayerStatus.Playing) {
                 // onstart()
@@ -149,11 +147,6 @@ export class Bucket {
         });
 
         return player;
-    }
-
-    stopPlayer() {
-        this.player.pause();
-        this.queue.jump(0);
     }
 
     destroyConnection() {

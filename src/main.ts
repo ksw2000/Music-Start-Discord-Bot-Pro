@@ -47,6 +47,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
             await interaction.reply(`attach 失敗${Util.randomCry()}，Music Start Pro 無法加入語音群。請確定您已經進入語音頻道。`);
         }
     } else if (interaction.commandName === 'bye') {
+        bucket.player.pause();
         bucket.destroyConnection();
         await interaction.reply(`ㄅㄅ ${Util.randomHappy()}`);
     } else if (interaction.commandName === 'play') {
@@ -84,7 +85,8 @@ client.on('interactionCreate', async (interaction: Interaction) => {
             await interaction.reply(Util.createEmbedMessage('錯誤', '繼續播放失敗，可使用 /jump 來重新播放', true));
         }
     } else if (interaction.commandName === 'stop') {
-        bucket.stopPlayer();
+        bucket.player.pause();
+        bucket.queue.jump(0);
         await interaction.reply('播放器已停止');
     } else if (interaction.commandName === 'list') {
         const list = bucket.queue.showList();
@@ -107,7 +109,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
             bucket.player.stop();
         }
         bucket.queue.removeAll();
-        interaction.editReply(`已清空播放清單!`);
+        interaction.reply(`已清空播放清單!`);
     } else if (interaction.commandName === 'sort') {
         bucket.queue.sort();
         const list = bucket.queue.showList();
@@ -151,7 +153,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
             interaction.editReply(Util.createEmbedMessage('錯誤', `${e}`, true));
         });
     } else if (interaction.commandName === 'help') {
-        let content = fs.readFileSync('../help.md', {encoding:'utf-8', flag:'r'});
+        let content = fs.readFileSync('./help.md', {encoding:'utf-8', flag:'r'});
         await interaction.reply(Util.createEmbedMessage('Music Start Pro 小助手', content));
     } else if(interaction.commandName === 'json'){
         await interaction.deferReply();
