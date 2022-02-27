@@ -1,0 +1,184 @@
+{
+    "instructions": {
+        "attach": {
+            "en": "Attach MS Pro to the voice channel where you are and fetch new instructions if updated.",
+            "zh": "將 Music Start Pro 加入您目前所在的語音房中，另外，當 Music Start Pro 更新指令時，可刷新指令集"
+        },
+        "bye": {
+            "en": "Detach Music Start Pro from the voice channel.",
+            "zh": "將 Music Start Pro 踢出語音房"
+        },
+        "play": {
+            "en": "Play music if the bot is not playing any song. Otherwise, add the song to the playlist.",
+            "zh": "播放音樂，若音樂正在播放，則會加入播放清單。若 Music Start Pro 不在語音房中，則會自動呼叫 /attach 加入您目前所在的語音房"
+        },
+        "pause": {
+            "en": "Pause the player.",
+            "zh": "音樂暫停播放"
+        },
+        "resume": {
+            "en": "Resume the player if you have called pause.",
+            "zh": "音樂繼續播放"
+        },
+        "stop": {
+            "en": "Stop the player and jump to the first song of the playlist.",
+            "zh": "停止播放，並回到播放清單最前端"
+        },
+        "list": {
+            "en": "Show the playlist with index.",
+            "zh": "列出播放清單及索引"
+        },
+        "jump": {
+            "en": "Jump to a song in the playlist by given index.",
+            "zh": "根據索引跳到播放清單的某一首歌"
+        },
+        "remove": {
+            "en": "Remove a song in the playlist by given index.",
+            "zh": "根據索引刪除播放清單的某一首歌"
+        },
+        "clear": {
+            "en": "Remove all songs in the playlist.",
+            "zh": "清空播放清單"
+        },
+        "sort": {
+            "en": "Sort the playlist in alphabetical order.",
+            "zh": "排序播放清單"
+        },
+        "shuffle": {
+            "en": "Shuffle the playlist except for the song currently playing.",
+            "zh": "將播放清單隨機打亂，正在播放的歌位置不會受影響"
+        },
+        "next": {
+            "en": "Play the next song.",
+            "zh": "播放下一首"
+        },
+        "pre": {
+            "en": "Play the previous song.",
+            "zh": "播放前一首"
+        },
+        "vol": {
+            "en": "Set the volume by given `volume` or shows the volume without given `volume`. Default: 0.64",
+            "zh": "設定音量，若不指定 num 則會顯示目前的音量，預設為 0.64"
+        },
+        "json": {
+            "en": "Add a batch of songs by given `json` or outputs the playlist in json format without given `json`.",
+            "zh": "將 json 格式的播放清單一次加入到播放清單中，若不填參數，則將目前的播放清單以 json 格式輸出"
+        },
+        "aqours": {
+            "en": "Add Aqours' songs that author recommends into playlist.",
+            "zh": "將作者精選的 Aqours 的歌單加入播放清單中"
+        },
+        "lang": {
+            "en": "Select language / 切換語言",
+            "zh": "Select language / 切換語言"
+        }
+    },
+    "params": {
+        "index": {
+            "en": "Any integer. Start at zero. Support overflow and negative number.",
+            "zh": "index 為任意整數，由 0 開始編號，超過播放清單時自動取餘。支援負數，-1 表示最後一首"
+        },
+        "volume": {
+            "en": "A number in close interval [0, 1]",
+            "zh": "介於閉區間[0, 1]"
+        },
+        "language": {
+            "en": "en: English, zh: 繁體中文",
+            "zh": "en: English, zh: 繁體中文"
+        },
+        "json":{
+            "en": "json format string.",
+            "zh": "json 格式字串"
+        }
+    },
+    "messages":{
+        "error":{
+            "en": "error",
+            "zh": "錯誤"
+        },
+        "appended_to_the_playlist":{
+            "en": "Appended to the playlist",
+            "zh": "新增至播放清單"
+        },
+        "current_volume":{
+            "en": "Current volume is:",
+            "zh": "目前音量為："
+        },
+        "volume_is_changed_to":{
+            "en": "Volume is changed to:",
+            "zh": "音量已調整至："
+        },
+        "volume_format_error":{
+            "en": "Volume must be in closed interval [0, 1]",
+            "zh": "音量必需介於閉區間 [0, 1]"
+        },
+        "is_shuffled":{
+            "en": "Playlist has been shuffled!",
+            "zh": "已將播放清單打亂"
+        },
+        "playlist":{
+            "en": "Playlist",
+            "zh": "播放清單"
+        },
+        "playlist_is_reset":{
+            "en": "The playlist has been reset",
+            "zh": "已清空播放清單!"
+        },
+        "cannot_remove_the_playing_song":{
+            "en": "Cannot remove the currently playing song",
+            "zh": "正在播放不可移除"
+        },
+        "removed_successfully":{
+            "en": "Removed successfully",
+            "zh": "該曲移除成功"
+        },
+        "stopped":{
+            "en": "Stopped",
+            "zh": "已停止播放"
+        },
+        "paused":{
+            "en": "Paused! Please use /resume to resume",
+            "zh": "音樂已暫停使用 /resume 以繼續"
+        },
+        "pause_error":{
+            "en": "Pause error! Try again please",
+            "zh": "暫停失敗，請再試一次"
+        },
+        "resume":{
+            "en": "Resumed!",
+            "zh": "繼續播放"
+        },
+        "resume_error": {
+            "en": "Resume error! Try to use /jump",
+            "zh": "繼續播放失敗，可使用 /jump 來重新播放"
+        },
+        "song_is_not_found":{
+            "en": "Song is not found",
+            "zh": "找不到曲目"
+        },
+        "bye":{
+            "en": "Bye! have a nice day!",
+            "zh": "ㄅㄅ"
+        },
+        "hello":{
+            "en": "Hello! Welcome to use Music Start Pro",
+            "zh": "歡迎使用 Music Start Pro!"
+        },
+        "attach_fail":{
+            "en":"/attach failed. Music Start Pro cannot enter into the voice channel. Please check you are already in the voice channel.",
+            "zh":"/attach 失敗，Music Start Pro 無法加入語音頻道。請確定您已經進入語音頻道。"
+        },
+        "player_error":{
+            "en": "The player is crashed! Try to use /jump to play other songs or re-attach by /bye and /attach",
+            "zh": "播放器發生錯誤！可利用 /jump 播放其他曲目，或使用 /bye 及 /attach 重新連接"
+        },
+        "robot_not_in_voice_channel":{
+            "en": "Music Start Pro is not in the voice channel. Use /attach to join the robot into the voice channel.",
+            "zh": "Music Start Pro 尚未進入語音頻道。可以使用 /attach 將機器人加入語音頻道"
+        },
+        "language_changed_successfully":{
+            "en": "Language is changed! We need some time to update so wait a minute please.",
+            "zh": "語言切換成功！更新需要一段時間，請稍候"
+        }
+    }
+}

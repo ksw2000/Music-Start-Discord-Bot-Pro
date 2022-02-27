@@ -2,11 +2,14 @@ import {
     MessageOptions,
     MessageEmbed,
     Guild,
+    Options,
 } from 'discord.js';
 
 import {
     MusicInfo
 } from './musicInfo';
+
+const { instructions, params } = require('./language.json');
 
 export class Util {
     static randomHappy() {
@@ -51,21 +54,21 @@ export class Util {
         return Util.createEmbedMessage(info?.title, description);
     }
 
-    static async registerCommand(guild: Guild | null) {
+    static async registerCommand(guild: Guild | null, lang?: string) {
         if (guild == null) return;
-        const descriptionIndex = 'index 為播放清單的編號，由 0 開始，若 index 為負數則由清單最末尾開始計數，也就是說 -1 表示清單最後一首，若數字超過播放清單長度，則系統會自動取餘';
+        lang = lang ?? "en";
         await guild.commands.set([
             {
                 name: 'attach',
-                description: '將 Music Start Pro 加入您目前所在的語音房中，另外，當 Music Start Pro 更新指令時，可刷新指令集'
+                description: instructions.attach[lang]
             },
             {
                 name: 'bye',
-                description: '將 Music Start Pro 踢出語音房'
+                description: instructions.bye[lang]
             },
             {
                 name: 'play',
-                description: '播放音樂，若音樂正在播放，則會加入播放清單。若 Music Start Pro 不在語音房中，則會自動呼叫 /attach 加入您目前所在的語音房',
+                description: instructions.play[lang],
                 options: [
                     {
                         name: 'url',
@@ -76,92 +79,88 @@ export class Util {
                 ]
             }, {
                 name: 'pause',
-                description: '音樂暫停播放',
+                description: instructions.pause[lang],
             }, {
                 name: 'resume',
-                description: '音樂繼續暫停',
+                description: instructions.resume[lang],
             }, {
                 name: 'stop',
-                description: '停止播放，並回到播放清單最前端',
+                description: instructions.stop[lang],
             }, {
                 name: 'list',
-                description: '列出播放清單'
+                description: instructions.list[lang]
             }, {
                 name: 'jump',
-                description: '直接跳到播放清單的某一首歌',
+                description: instructions.jump[lang],
                 options: [
                     {
                         name: 'index',
                         type: 'INTEGER',
-                        description: descriptionIndex,
+                        description: params.index[lang],
                         required: true
                     }
                 ]
             }, {
                 name: 'remove',
-                description: '指定刪除播放清單的某一首歌',
+                description: instructions.remove[lang],
                 options: [
                     {
                         name: 'index',
                         type: 'INTEGER',
-                        description: descriptionIndex,
+                        description: params.index[lang],
                         required: true
                     }
                 ]
             }, {
                 name: 'clear',
-                description: '清空播放清單'
+                description: instructions.clear[lang]
             }, {
                 name: 'sort',
-                description: '排序播放清單'
+                description: instructions.sort[lang]
             }, {
                 name: 'shuffle',
-                description: '將播放清單隨機打亂，正在播放的歌位置不會受影響'
+                description: instructions.shuffle[lang]
             }, {
                 name: 'next',
-                description: '播放下一首'
+                description: instructions.next[lang]
             }, {
                 name: 'pre',
-                description: '播放前一首'
+                description: instructions.next[lang]
             }, {
                 name: 'vol',
-                description: '設定音量，若不指定 num 則會顯示目前的音量，預設為 0.64',
+                description: instructions.vol[lang],
                 options: [
                     {
-                        name: 'num',
+                        name: 'volume',
                         type: 'NUMBER',
-                        description: '音量介於閉區間 [0, 1]',
+                        description: params.volume[lang],
                         required: false
                     }
                 ]
             }, {
-                name: 'seek',
-                description: '跳到歌曲的某個時間點，單位：秒',
-                options: [
-                    {
-                        name: 'time',
-                        type: 'STRING',
-                        description: '以 : 為60進位分割符',
-                        required: true
-                    }
-                ]
-            }, {
-                name: 'help',
-                description: '顯示操作資訊',
-            }, {
                 name: 'json',
-                description: '將 json 格式的播放清單一次加入到播放清單中',
+                description: instructions.json[lang],
                 options: [
                     {
                         name: 'json',
                         type: 'STRING',
-                        description: 'json 格式字串',
+                        description: params.json[lang],
                         required: false
                     }
                 ]
             }, {
                 name: 'aqours',
-                description: '將作者精選的 Aqours 的歌單加入播放清單中',
+                description: instructions.aqours[lang],
+            }, {
+                name: 'lang',
+                description: instructions.lang[lang],
+                options: [
+                    {
+                        name: 'language',
+                        type: 'STRING',
+                        description: params.language[lang]
+                    }
+                ]
             }
         ]);
     }

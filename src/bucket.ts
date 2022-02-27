@@ -23,6 +23,7 @@ import { MusicInfo } from './musicInfo';
 import { Util } from './util';
 import { Queue } from './queue';
 import ytdl from 'ytdl-core';
+const { messages } = require('./language.json');
 
 export class Bucket {
     private id: string;
@@ -32,6 +33,7 @@ export class Bucket {
     public player: AudioPlayer = this.createPlayer();
     private _playerErrorLock: boolean = false;   // set true when player is error
     private _playerVolume: number = .64;
+    private _lang: string = "en";
     readonly queue: Queue = new Queue();
 
     static instant: Map<string, Bucket> = new Map();
@@ -51,6 +53,8 @@ export class Bucket {
 
     connect(interaction: Interaction): boolean {
         this.interaction = interaction;
+        // before connecting, try to destroy connection
+        this.disconnect();
         if (interaction.member instanceof GuildMember && interaction.member.voice.channel) {
             const channel = <VoiceChannel>interaction?.member?.voice?.channel;
             this.connection = joinVoiceChannel({
@@ -110,7 +114,7 @@ export class Bucket {
             console.log(error.name);
             console.log(error.stack);
             this._playerErrorLock = true;
-            this.interaction?.channel?.send(Util.createEmbedMessage('錯誤', `播放器發生錯誤 ${Util.randomCry()}`, true));
+            this.interaction?.channel?.send(Util.createEmbedMessage(messages.error[this.lang], `${messages.player_error[this.lang]} ${Util.randomCry()}`, true));
         });
 
         // this block handles
@@ -134,10 +138,10 @@ export class Bucket {
                     this.play(this.queue.current, this.interaction).then(() => {
                         this.interaction?.channel?.send(Util.createMusicInfoMessage(this.queue.current));
                     }).catch(e => {
-                        this.interaction?.channel?.send(Util.createEmbedMessage('錯誤', `${e}`, true));
+                        this.interaction?.channel?.send(Util.createEmbedMessage(messages.error[this.lang], `${e}`, true));
                     });
                 }
-                
+
                 this._playerErrorLock = false;
             } else if (newState.status === AudioPlayerStatus.Playing) {
                 // onstart()
@@ -149,7 +153,7 @@ export class Bucket {
         return player;
     }
 
-    destroyConnection() {
+    disconnect() {
         this.connection?.destroy();
     }
 
@@ -162,7 +166,7 @@ export class Bucket {
             if (interaction) {
                 this.connect(interaction);
             } else {
-                throw ('機器人尚未進入語音頻道');
+                throw (messages.robot_not_in_voice_channel[this.lang]);
             }
         }
 
@@ -198,7 +202,7 @@ export class Bucket {
         this.play(music, interaction, begin).then(() => {
             interaction?.editReply(Util.createMusicInfoMessage(music));
         }).catch(e => {
-            interaction?.channel?.send(Util.createEmbedMessage('錯誤', `${e}`, true));
+            interaction?.editReply(Util.createEmbedMessage(messages.error[this.lang], e as string, true));
         });
     }
 
@@ -210,5 +214,17 @@ export class Bucket {
     set volume(vol: number) {
         this._playerVolume = vol;
         this.resource?.volume?.setVolume(vol);
+    }
+
+    get lang(): string {
+        return this._lang;
+    }
+
+    // set language and re-register command.
+    set lang(lang: string) {
+        this._lang = lang;
+        if (this.interaction != null) {
+            Util.registerCommand(this.interaction.guild, this._lang);
+        }
     }
 }
