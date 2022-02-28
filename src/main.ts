@@ -92,7 +92,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         bucket.queue.jump(0);
         await interaction.reply(messages.stopped[bucket.lang]);
     } else if (interaction.commandName === 'list') {
-        const list = bucket.queue.showList();
+        const list = bucket.queue.showList(bucket.lang);
         await interaction.reply(Util.createEmbedMessage(messages.playlist[bucket.lang], list));
     } else if (interaction.commandName === 'jump') {
         await interaction.deferReply();
@@ -117,7 +117,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         await interaction.reply(messages.playlist_is_reset[bucket.lang]);
     } else if (interaction.commandName === 'sort') {
         bucket.queue.sort();
-        const list = bucket.queue.showList();
+        const list = bucket.queue.showList(bucket.lang);
         await interaction.reply(Util.createEmbedMessage(messages.playlist[bucket.lang], list));
     }else if (interaction.commandName === 'shuffle') {
         bucket.queue.shuffle();

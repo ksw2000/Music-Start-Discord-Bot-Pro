@@ -179,6 +179,10 @@
         "language_changed_successfully":{
             "en": "Language is changed! We need some time to update so wait a minute please.",
             "zh": "語言切換成功！更新需要一段時間，請稍候"
+        },
+        "no_playlist":{
+            "en": "The playlist is empty",
+            "zh": "無播放清單"
         }
     }
 }

@@ -1,4 +1,5 @@
 import { MusicInfo } from './musicInfo';
+const {messages} = require('./language.json');
 
 export class Queue {
     private _list: Array<MusicInfo>;
@@ -79,9 +80,9 @@ export class Queue {
     }
 
     // showList() returns the list all elements in this queue
-    showList(): string {
+    showList(lang: string): string {
         if (this.isEmpty()) {
-            return '無播放清單';
+            return messages.no_playlist[lang];
         }
         let content = '';
         for (const [index, info] of this._list.entries()) {
