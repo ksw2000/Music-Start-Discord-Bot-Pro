@@ -203,7 +203,8 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         if (['zh', 'en'].includes(lang)){
             bucket.lang = lang;
             await interaction.reply(messages.language_changed_successfully[bucket.lang]);
+        }else{
+            await interaction.reply("Should be either zh or en!");
         }
-        await interaction.reply("Should be either zh or en!");
     }
 })
