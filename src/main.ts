@@ -71,7 +71,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
 
         // 2. play if the player is not playing
         if (!bucket.playing) {
-            bucket.playAndEditReplyDefault(bucket.queue.current, interaction);
+            await bucket.playAndEditReplyDefault(bucket.queue.current, interaction);
         }
     } else if (interaction.commandName === 'pause') {
         if (bucket.player.pause()) {
@@ -94,11 +94,16 @@ client.on('interactionCreate', async (interaction: Interaction) => {
     } else if (interaction.commandName === 'list') {
         const list = bucket.queue.showList(bucket.lang);
         await interaction.reply(Util.createEmbedMessage(messages.playlist[bucket.lang], list));
-    } else if (interaction.commandName === 'jump') {
+    } else if (interaction.commandName === 'distinct'){
+        // remove duplicate songs and show list
+        bucket.queue.removeDuplicate();
+        const list = bucket.queue.showList(bucket.lang);
+        await interaction.reply(Util.createEmbedMessage(messages.playlist[bucket.lang], list));
+    }else if (interaction.commandName === 'jump') {
         await interaction.deferReply();
         const index = interaction.options.get('index')?.value as number;
         bucket.queue.jump(index);
-        bucket.playAndEditReplyDefault(bucket.queue.current, interaction);
+        await bucket.playAndEditReplyDefault(bucket.queue.current, interaction);
     } else if (interaction.commandName === 'remove') {
         const index = interaction.options.get('index')?.value as number;
         // if remove success
@@ -125,11 +130,11 @@ client.on('interactionCreate', async (interaction: Interaction) => {
     } else if (interaction.commandName === 'next') {
         await interaction.deferReply();
         bucket.queue.next(1);
-        bucket.playAndEditReplyDefault(bucket.queue.current, interaction);
+        await bucket.playAndEditReplyDefault(bucket.queue.current, interaction);
     } else if (interaction.commandName === 'pre') {
         await interaction.deferReply();
         bucket.queue.next(-1);
-        bucket.playAndEditReplyDefault(bucket.queue.current, interaction);
+        await bucket.playAndEditReplyDefault(bucket.queue.current, interaction);
     } else if (interaction.commandName === 'vol') {
         await interaction.deferReply();
         if (interaction.options.get('volume') === null) {

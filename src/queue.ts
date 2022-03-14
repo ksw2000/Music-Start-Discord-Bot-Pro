@@ -57,6 +57,23 @@ export class Queue {
         return true;
     }
 
+    removeDuplicate(){
+        let set = new Set<string>(); // set of urls
+        let newList = new Array<MusicInfo>();
+        let newIndex = 0;
+        for(let i=0; i<this._list.length; i++){
+            if(!set.has(this._list[i].url)){
+                newList.push(this._list[i]);
+                set.add(this._list[i].url);
+                if(this._list[this._index].url == this._list[i].url){
+                    newIndex = i;
+                }
+            }
+        }
+        this._list = newList;
+        this._index = newIndex;
+    }
+
     removeAll(){
         this._list = [];
     }

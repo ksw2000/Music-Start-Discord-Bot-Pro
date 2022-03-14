@@ -28,6 +28,10 @@
             "en": "Show the playlist with index.",
             "zh": "列出播放清單及索引"
         },
+        "distinct":{
+            "en": "Remove duplicate songs.",
+            "zh": "刪除重複歌曲"
+        },
         "jump": {
             "en": "Jump to a song in the playlist by given index.",
             "zh": "根據索引跳到播放清單的某一首歌"

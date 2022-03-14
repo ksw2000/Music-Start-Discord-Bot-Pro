@@ -90,6 +90,9 @@ export class Util {
                 name: 'list',
                 description: instructions.list[lang]
             }, {
+                name: 'distinct',
+                description: instructions.distinct[lang]
+            },{
                 name: 'jump',
                 description: instructions.jump[lang],
                 options: [

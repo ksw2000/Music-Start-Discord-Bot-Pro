@@ -53,8 +53,6 @@ export class Bucket {
 
     connect(interaction: Interaction): boolean {
         this.interaction = interaction;
-        // before connecting, try to destroy connection
-        this.disconnect();
         if (interaction.member instanceof GuildMember && interaction.member.voice.channel) {
             const channel = <VoiceChannel>interaction?.member?.voice?.channel;
             this.connection = joinVoiceChannel({
@@ -79,25 +77,27 @@ export class Bucket {
         });
 
         // https://discordjs.guide/voice/audio-player.html#life-cycle
-        player.on(AudioPlayerStatus.Playing, () => {
-            console.log("playing");
-        });
+        
+        // DEBUG:
+        // player.on(AudioPlayerStatus.Playing, () => {
+        //     console.log("playing");
+        // });
 
-        player.on(AudioPlayerStatus.Buffering, () => {
-            console.log("buffering");
-        });
+        // player.on(AudioPlayerStatus.Buffering, () => {
+        //     console.log("buffering");
+        // });
 
-        player.on(AudioPlayerStatus.AutoPaused, () => {
-            console.log("autoPaused");
-        });
+        // player.on(AudioPlayerStatus.AutoPaused, () => {
+        //     console.log("autoPaused");
+        // });
 
-        player.on(AudioPlayerStatus.Paused, () => {
-            console.log("paused");
-        });
+        // player.on(AudioPlayerStatus.Paused, () => {
+        //     console.log("paused");
+        // });
 
-        player.on(AudioPlayerStatus.Idle, () => {
-            console.log("idle");
-        });
+        // player.on(AudioPlayerStatus.Idle, () => {
+        //     console.log("idle");
+        // });
 
         /**
          * 當播放器錯誤發生時，state會依序進入以下狀態:
@@ -120,20 +120,18 @@ export class Bucket {
         // this block handles
         // (1) player error
         // (2) play next song when player finished
-        player.on('stateChange', (oldState, newState) => {
+        player.on<"stateChange">('stateChange', (oldState, newState) => {
             // onfinish()
             if (newState.status === AudioPlayerStatus.Idle && oldState.status !== AudioPlayerStatus.Idle) {
                 // If the Idle state is entered from a non-Idle state, it means that an audio resource has finished playing.
                 // The queue is then processed to start playing the next track, if one is available.
 
                 if (this._playerErrorLock) {
-                    console.log('onfinish (error)');
                     // fake finish() i.e., error occurred
                     console.log('重置播放器');
                     this.player = this.createPlayer();
                 } else {
                     // real finish()
-                    console.log('onfinish (success)');
                     this.queue.next(1);
                     this.play(this.queue.current, this.interaction).then(() => {
                         this.interaction?.channel?.send(Util.createMusicInfoMessage(this.queue.current));
@@ -192,8 +190,15 @@ export class Bucket {
             inlineVolume: true,
         });
         this.resource?.volume?.setVolume(this.volume);
-
-        this.player.play(this.resource);
+        try{
+            this.player.play(this.resource);
+        }catch(e){
+            console.log("line196");
+            console.log(e);
+            console.log("重置播放器");
+            this.player = this.createPlayer();
+        }
+        
         await entersState(this.player, AudioPlayerStatus.Playing, 5e3);
     }
 
@@ -202,7 +207,7 @@ export class Bucket {
         this.play(music, interaction, begin).then(() => {
             interaction?.editReply(Util.createMusicInfoMessage(music));
         }).catch(e => {
-            interaction?.editReply(Util.createEmbedMessage(messages.error[this.lang], e as string, true));
+            interaction?.editReply(Util.createEmbedMessage(messages.error[this.lang], `${e}`, true));
         });
     }
 
