@@ -173,8 +173,8 @@
             "zh":"/attach 失敗，Music Start Pro 無法加入語音頻道。請確定您已經進入語音頻道。"
         },
         "player_error":{
-            "en": "The player is crashed! Try to use /jump to play other songs or re-attach by /bye and /attach",
-            "zh": "播放器發生錯誤！可利用 /jump 播放其他曲目，或使用 /bye 及 /attach 重新連接"
+            "en": "The player is crashed! Try to use /clear to clear play queue and /play",
+            "zh": "播放器發生錯誤！可利用 /clear 清空播放清單，再使用 /play 重新連接"
         },
         "robot_not_in_voice_channel":{
             "en": "Music Start Pro is not in the voice channel. Use /attach to join the robot into the voice channel.",

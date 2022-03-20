@@ -168,13 +168,22 @@ export class Bucket {
             }
         }
 
-        const stream = ytdl.downloadFromInfo(music.ytdlInfo, {
+        const stream = ytdl(music.url, {
             quality: 'highestaudio',
             filter: 'audioonly',
             highWaterMark: 1 << 25, // 32 MB
             // begin: This option is not very reliable for non-live videos
             begin: begin ? begin : 0,
         });
+
+        // ytdlInfo seems to be expired after a period of time
+        // const stream = ytdl.downloadFromInfo(music.ytdlInfo, {
+        //     quality: 'highestaudio',
+        //     filter: 'audioonly',
+        //     highWaterMark: 1 << 25, // 32 MB
+        //     // begin: This option is not very reliable for non-live videos
+        //     begin: begin ? begin : 0,
+        // });
 
         // DEBUG
         // number - Chunk length in bytes or segment number.
