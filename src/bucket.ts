@@ -23,7 +23,11 @@ import { MusicInfo } from './musicInfo';
 import { Util } from './util';
 import { Queue } from './queue';
 import ytdl from 'ytdl-core';
-const { messages } = require('./language.json');
+import { messages } from './language.json';
+
+interface langMap{
+    [key: string]: string;
+}
 
 export class Bucket {
     private id: string;
@@ -114,7 +118,8 @@ export class Bucket {
             console.log(error.name);
             console.log(error.stack);
             this._playerErrorLock = true;
-            this.interaction?.channel?.send(Util.createEmbedMessage(messages.error[this.lang], `${messages.player_error[this.lang]} ${Util.randomCry()}`, true));
+            this.interaction?.channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang], 
+                `${(messages.player_error as langMap)[this.lang]} ${Util.randomCry()}`, true));
         });
 
         // this block handles
@@ -136,7 +141,7 @@ export class Bucket {
                     this.play(this.queue.current, this.interaction).then(() => {
                         this.interaction?.channel?.send(Util.createMusicInfoMessage(this.queue.current));
                     }).catch(e => {
-                        this.interaction?.channel?.send(Util.createEmbedMessage(messages.error[this.lang], `${e}`, true));
+                        this.interaction?.channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang], `${e}`, true));
                     });
                 }
 
@@ -164,7 +169,7 @@ export class Bucket {
             if (interaction) {
                 this.connect(interaction);
             } else {
-                throw (messages.robot_not_in_voice_channel[this.lang]);
+                throw ((messages.robot_not_in_voice_channel as langMap)[this.lang]);
             }
         }
 
@@ -216,7 +221,7 @@ export class Bucket {
         this.play(music, interaction, begin).then(() => {
             interaction?.editReply(Util.createMusicInfoMessage(music));
         }).catch(e => {
-            interaction?.editReply(Util.createEmbedMessage(messages.error[this.lang], `${e}`, true));
+            interaction?.editReply(Util.createEmbedMessage((messages.error as langMap)[this.lang], `${e}`, true));
         });
     }
 

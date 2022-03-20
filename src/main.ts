@@ -9,9 +9,17 @@ import ytdl from 'ytdl-core';
 import { MusicInfo } from './musicInfo';
 import { Util } from './util';
 import { Bucket } from './bucket';
+import 'process';
 
 const { messages } = require('./language.json');
-const token = require('process').env.DiscordToken || require('./token.json').token;
+
+let token = process.env.DiscordToken || require('./token.json').token;
+
+process.argv.forEach(function (val, index) {
+    if(val=='beta'){
+        token = require('./token.json').betaToken;
+    }
+});
 
 const client: Client = new Client({
     intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES]
@@ -39,7 +47,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
     let bucket = Bucket.find(interaction.guildId);
     
     if (interaction.commandName === 'attach') {
-        Util.registerCommand(interaction.guild);
+        Util.registerCommand(interaction.guild, bucket?.lang);
         if (bucket.connect(interaction)) {
             await interaction.reply(`☆${messages.hello[bucket.lang]} ${Util.randomHappy()} ☆`);
         } else {
