@@ -36,6 +36,10 @@
             "en": "Jump to a song in the playlist by given index.",
             "zh": "根據索引跳到播放清單的某一首歌"
         },
+        "swap":{
+            "en": "Swap two songs by given index",
+            "zh": "根據索引對調兩首歌曲"
+        },
         "remove": {
             "en": "Remove a song in the playlist by given index.",
             "zh": "根據索引刪除播放清單的某一首歌"

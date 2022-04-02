@@ -104,6 +104,23 @@ export class Util {
                     }
                 ]
             }, {
+                name: 'swap',
+                description: instructions.swap[lang],
+                options: [
+                    {
+                        name: 'index1',
+                        type: 'INTEGER',
+                        description: params.index[lang],
+                        required: true
+                    },
+                    {
+                        name: 'index2',
+                        type: 'INTEGER',
+                        description: params.index[lang],
+                        required: true
+                    }
+                ]
+            },{
                 name: 'remove',
                 description: instructions.remove[lang],
                 options: [

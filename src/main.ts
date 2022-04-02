@@ -16,7 +16,7 @@ const { messages } = require('./language.json');
 let token = process.env.DiscordToken || require('./token.json').token;
 
 process.argv.forEach(function (val, index) {
-    if(val=='beta'){
+    if (val == 'beta') {
         token = require('./token.json').betaToken;
     }
 });
@@ -45,7 +45,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
     // not all interactions are slash command
     if (!interaction.isCommand() || !interaction.guildId) return;
     let bucket = Bucket.find(interaction.guildId);
-    
+
     if (interaction.commandName === 'attach') {
         Util.registerCommand(interaction.guild, bucket?.lang);
         if (bucket.connect(interaction)) {
@@ -61,7 +61,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         await interaction.deferReply();
         const url = interaction.options.get('url')?.value as string;
         if (!ytdl.validateURL(url) && !ytdl.validateID(url)) {
-            interaction.editReply(Util.createEmbedMessage(messages.error[bucket.lang], 
+            interaction.editReply(Util.createEmbedMessage(messages.error[bucket.lang],
                 `${messages.song_is_not_found[bucket.lang]} ${Util.randomCry()}`, true));
             return;
         }
@@ -73,7 +73,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
             bucket.queue.add(info);
             interaction.editReply(Util.createEmbedMessage(messages.appended_to_the_playlist[bucket.lang], info.title));
         } else {
-            interaction.editReply(Util.createEmbedMessage(messages.error[bucket.lang], 
+            interaction.editReply(Util.createEmbedMessage(messages.error[bucket.lang],
                 `${messages.song_is_not_found[bucket.lang]} ${Util.randomCry()}`, true));
         }
 
@@ -85,7 +85,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         if (bucket.player.pause()) {
             await interaction.reply(messages.paused[bucket.lang]);
         } else {
-            await interaction.reply(Util.createEmbedMessage(messages.error[bucket.lang], 
+            await interaction.reply(Util.createEmbedMessage(messages.error[bucket.lang],
                 `${messages.pause_error[bucket.lang]} ${Util.randomCry()}`, true));
         }
     } else if (interaction.commandName === 'resume') {
@@ -102,28 +102,33 @@ client.on('interactionCreate', async (interaction: Interaction) => {
     } else if (interaction.commandName === 'list') {
         const list = bucket.queue.showList(bucket.lang);
         await interaction.reply(Util.createEmbedMessage(messages.playlist[bucket.lang], list));
-    } else if (interaction.commandName === 'distinct'){
+    } else if (interaction.commandName === 'distinct') {
         // remove duplicate songs and show list
         bucket.queue.removeDuplicate();
         const list = bucket.queue.showList(bucket.lang);
         await interaction.reply(Util.createEmbedMessage(messages.playlist[bucket.lang], list));
-    }else if (interaction.commandName === 'jump') {
+    } else if (interaction.commandName === 'jump') {
         await interaction.deferReply();
         const index = interaction.options.get('index')?.value as number;
         bucket.queue.jump(index);
         await bucket.playAndEditReplyDefault(bucket.queue.current, interaction);
+    } else if (interaction.commandName === 'swap') {
+        const index1 = interaction.options.get('index1')?.value as number;
+        const index2 = interaction.options.get('index2')?.value as number;
+        bucket.queue.swap(index1, index2);
+        await interaction.reply("Done!");
     } else if (interaction.commandName === 'remove') {
         const index = interaction.options.get('index')?.value as number;
         // if remove success
         if (bucket.queue.remove(index, bucket.playing)) {
-            await interaction.reply(Util.createEmbedMessage('', 
+            await interaction.reply(Util.createEmbedMessage('',
                 `${messages.removed_successfully[bucket.lang]} ${Util.randomHappy()}`));
         } else {
-            await interaction.reply(Util.createEmbedMessage(messages.error[bucket.lang], 
+            await interaction.reply(Util.createEmbedMessage(messages.error[bucket.lang],
                 `${messages.cannot_remove_the_playing_song[bucket.lang]} ${Util.randomCry()}`, true));
         }
     } else if (interaction.commandName === 'clear') {
-        if(bucket.playing){
+        if (bucket.playing) {
             bucket.player.stop();
         }
         bucket.queue.removeAll();
@@ -132,7 +137,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         bucket.queue.sort();
         const list = bucket.queue.showList(bucket.lang);
         await interaction.reply(Util.createEmbedMessage(messages.playlist[bucket.lang], list));
-    }else if (interaction.commandName === 'shuffle') {
+    } else if (interaction.commandName === 'shuffle') {
         bucket.queue.shuffle();
         await interaction.reply(`${messages.is_shuffled[bucket.lang]} ${Util.randomHappy()}`);
     } else if (interaction.commandName === 'next') {
@@ -156,68 +161,68 @@ client.on('interactionCreate', async (interaction: Interaction) => {
                 interaction.editReply(`${messages.volume_is_changed_to[bucket.lang]} ${vol} ${Util.randomHappy()}`);
             }
         }
-    } else if (interaction.commandName === 'seek') {
-        await interaction.reply('deprecated command');
-        /*await interaction.deferReply();
-        const time = interaction.options.get('time')?.value as string;
-        let timePart = time.split(':');
-        let secs = 0;
-        for (let i = timePart.length - 1, j = 0; i >= 0; i--, j++) {
-            secs += Number(timePart[i]) * (60 ** j);
-        }
-
-        bucket.play(bucket.queue.current, interaction, secs * 1000).then(() => {
-            interaction.editReply('SEEK! (實驗功能)');
-        }).catch(e => {
-            interaction.editReply(Util.createEmbedMessage('錯誤', `${e}`, true));
-        });
-        */
-    } else if (interaction.commandName === 'help') {
-        await interaction.reply('deprecated command');
-    } else if(interaction.commandName === 'json'){
+    } else if (interaction.commandName === 'json') {
         await interaction.deferReply();
         if (interaction.options.get('json') === null) {
-            // output
+            // read mode
             let url: Array<string> = [];
             bucket.queue.list.forEach((info: MusicInfo) => {
                 url.push(info.url.replace('https://www.youtube.com/watch?v=', ''))
             });
             interaction.editReply('```\n' + JSON.stringify(url, null, '') + '\n```');
-        }else{
-            // input
-            try {
-                let list: Array<string> = JSON.parse(interaction.options.get('json')!.value as string);
-                list.forEach(url => {
-                    ytdl.getInfo(url).then(res => {
-                        const info = MusicInfo.fromDetails(res);
-                        if (info != null) {
-                            bucket.queue.add(info);
-                        }
-                    });
+        } else {
+            // write mode
+            interaction.editReply('Adding ... (please wait a second)');
+            let list: Array<string> = JSON.parse(interaction.options.get('json')!.value as string);
+            let task: Array<Promise<MusicInfo | null>> = [];
+            list.forEach(async (urlID: string) => {
+                task.push(new Promise<MusicInfo | null>((resolve, reject) => {
+                    ytdl.getInfo(urlID).then(res => {
+                        resolve(MusicInfo.fromDetails(res));
+                    }).catch(reject);
+                }));
+            });
+            Promise.all(task).then(infoList => {
+                infoList.forEach(info => {
+                    if (info != null) {
+                        bucket.queue.add(info);
+                    }
                 });
                 interaction.editReply(messages.appended_to_the_playlist[bucket.lang]);
-            } catch (e) {
+            }).catch(e=>{
                 interaction.editReply(Util.createEmbedMessage('Error', `${e}`, true));
-            }
+            });
         }
     } else if (interaction.commandName === 'aqours') {
         let aqoursMusicList = require('../susume-list/aqours.json').list;
-        aqoursMusicList.forEach((urlID: string)=>{
-            ytdl.getInfo(urlID).then(res => {
-                const info = MusicInfo.fromDetails(res);
+        let task: Array<Promise<MusicInfo | null>> = [];
+        interaction.reply('Aqours... (please wait a second)');
+        aqoursMusicList.forEach(async (urlID: string) => {
+            task.push(new Promise<MusicInfo | null>((resolve, reject) => {
+                ytdl.getInfo(urlID).then(res => {
+                    resolve(MusicInfo.fromDetails(res));
+                }).catch(reject);
+            }));
+        });
+        Promise.all(task).then(infoList => {
+            infoList.forEach(info => {
                 if (info != null) {
                     bucket.queue.add(info);
                 }
             });
-        })
-        interaction.reply('Aqours sunshine!');
+            interaction.editReply('Aqours sunshine!');
+        }).catch(e => {
+            interaction.editReply(Util.createEmbedMessage('Error', `${e}`, true));
+        });
     } else if (interaction.commandName === 'lang') {
-        let lang : string = interaction.options.get('language')?.value as string
-        if (['zh', 'en'].includes(lang)){
+        let lang: string = interaction.options.get('language')?.value as string
+        if (['zh', 'en'].includes(lang)) {
             bucket.lang = lang;
             await interaction.reply(messages.language_changed_successfully[bucket.lang]);
-        }else{
+        } else {
             await interaction.reply("Should be either zh or en!");
         }
+    } else {
+        await interaction.reply("Command not found");
     }
 })
