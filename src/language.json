@@ -76,6 +76,10 @@
             "en": "Add Aqours' songs that author recommends into playlist.",
             "zh": "將作者精選的 Aqours 的歌單加入播放清單中"
         },
+        "muse":{
+            "en": "Add μ's' songs that author recommends into playlist.",
+            "zh": "將 μ's 的歌單加入播放清單中"
+        },
         "lang": {
             "en": "Select language / 切換語言",
             "zh": "Select language / 切換語言"

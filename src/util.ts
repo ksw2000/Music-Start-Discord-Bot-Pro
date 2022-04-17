@@ -171,6 +171,9 @@ export class Util {
                 name: 'aqours',
                 description: instructions.aqours[lang],
             }, {
+                name: 'muse',
+                description: instructions.muse[lang],
+            }, {
                 name: 'lang',
                 description: instructions.lang[lang],
                 options: [

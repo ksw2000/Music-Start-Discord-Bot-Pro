@@ -194,11 +194,25 @@ client.on('interactionCreate', async (interaction: Interaction) => {
                     interaction.editReply(Util.createEmbedMessage('Error', `${e}`, true));
                 });
             }
-        } else if (interaction.commandName === 'aqours') {
-            let aqoursMusicList = require('../susume-list/aqours.json').list;
+        } else if (interaction.commandName === 'aqours' || interaction.commandName === 'muse') {
+            // fetch recommend music list
+            let recommendMusicList = require('../susume-list/' + interaction.commandName + '.json').list;
+            
+            // set interaction message
+            let reply: string = "";
+            let deferReply: string = "";
+            if (interaction.commandName === 'aqours'){
+                reply = 'Aqours... (please wait a second)';
+                deferReply = 'Aqours sunshine!';
+            }else if(interaction.commandName === 'muse'){
+                reply = "μ's... (please wait a second)";
+                deferReply = "μ's MUSIC START!";
+            }
+            
+            // interact to the guild and fetch music infos on Youtube
+            interaction.reply(reply);
             let task: Array<Promise<MusicInfo | null>> = [];
-            interaction.reply('Aqours... (please wait a second)');
-            aqoursMusicList.forEach(async (urlID: string) => {
+            recommendMusicList.forEach(async (urlID: string) => {
                 task.push(new Promise<MusicInfo | null>((resolve, reject) => {
                     ytdl.getInfo(urlID).then(res => {
                         resolve(MusicInfo.fromDetails(res));
@@ -211,7 +225,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
                         bucket.queue.add(info);
                     }
                 });
-                interaction.editReply('Aqours sunshine!');
+                interaction.editReply(deferReply);
             }).catch(e => {
                 interaction.editReply(Util.createEmbedMessage('Error', `${e}`, true));
             });
