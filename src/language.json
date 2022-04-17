@@ -120,9 +120,13 @@
             "en": "Volume must be in closed interval [0, 1]",
             "zh": "音量必需介於閉區間 [0, 1]"
         },
+        "is_sorted": {
+            "en": "Playlist has been sorted! Show list by /list",
+            "zh": "已將播放清單排序，可用 /list 顯示播放清單"
+        },
         "is_shuffled":{
             "en": "Playlist has been shuffled!",
-            "zh": "已將播放清單打亂"
+            "zh": "已將播放清單打亂，可用 /list 顯示播放清單"
         },
         "playlist":{
             "en": "Playlist",

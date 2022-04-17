@@ -2,7 +2,6 @@ import {
     MessageOptions,
     MessageEmbed,
     Guild,
-    Options,
 } from 'discord.js';
 
 import {

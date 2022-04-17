@@ -1,5 +1,19 @@
 import { MusicInfo } from './musicInfo';
-const { messages } = require('./language.json');
+import { Util } from './util';
+import { messages } from './language.json';
+import {
+    MessageButton,
+    MessageOptions,
+    MessageActionRow,
+    MessageEmbed,
+    CommandInteraction
+} from 'discord.js';
+
+const entriesOfOnePage = 30;
+
+interface langMap {
+    [key: string]: string;
+}
 
 export class Queue {
     private _list: Array<MusicInfo>;
@@ -18,13 +32,29 @@ export class Queue {
         return this._list.length;
     }
 
+    // return the current music info
     get current(): MusicInfo {
         return this._list[this._index];
     }
 
-    _genericIndex(index: number) {
+    // return current page
+    get page(): number {
+        return Math.floor(this._index / entriesOfOnePage);
+    }
+
+    // return the number of pages
+    get pages(): number {
+        return Math.ceil(this.len / entriesOfOnePage);
+    }
+
+    private _genericIndex(index: number) {
         index = index % this.len;
         return (index < 0) ? index + this.len : index;
+    }
+
+    private _genericPage(page: number) {
+        page = page % this.pages;
+        return (page < 0) ? page + this.pages : page;
     }
 
     isEmpty(): boolean {
@@ -86,7 +116,7 @@ export class Queue {
     }
 
     removeAll() {
-        this._list = [];
+        this._list = new Array<MusicInfo>();
         this._index = 0;
     }
 
@@ -125,17 +155,63 @@ export class Queue {
         }
     }
 
-    // showList() returns the list all elements in this queue
-    showList(lang: string): string {
-        if (this.isEmpty()) {
-            return messages.no_playlist[lang];
-        }
+    private showListByPage(page: number): string {
         let content = '';
-        for (const [index, info] of this._list.entries()) {
-            content += (index == this._index)
-                ? `**${index}.\t${info.title}**\n`
-                : `${index}.\t${info.title}\n`;
+        for (let i = page * entriesOfOnePage; i < Math.min((page + 1) * entriesOfOnePage, this.len); i++) {
+            content += (i == this._index)
+                ? `**${i}.\t${this._list[i].title}**\n`
+                : `${i}.\t${this._list[i].title}\n`;
         }
         return content;
+    }
+
+    showListWithPageButton(lang: string, page: number): MessageOptions {
+        const btnNext = new MessageButton()
+            .setCustomId('next_page')
+            .setLabel('Next')
+            .setStyle('PRIMARY')
+        const btnPre = new MessageButton()
+            .setCustomId('previous_page')
+            .setLabel('Previous')
+            .setStyle('PRIMARY')
+
+        return {
+            embeds: [new MessageEmbed()
+                .setTitle((messages.playlist as langMap)[lang] + `\tPage: ${page}`)
+                .setColor(0x33DFFF)
+                .setDescription(this.showListByPage(page))
+            ],
+            components: [new MessageActionRow()
+                .addComponents(btnPre)
+                .addComponents(btnNext)
+            ]
+        }
+    }
+
+    showList(lang: string, interaction: CommandInteraction): MessageOptions {
+        if (this.isEmpty()) {
+            return Util.createEmbedMessage((messages.playlist as langMap)[lang], (messages.no_playlist as langMap)[lang]);
+        }
+        if (this.len <= entriesOfOnePage) {
+            return Util.createEmbedMessage((messages.playlist as langMap)[lang], this.showListByPage(0));
+        }
+
+        let page = Math.floor(this._index / entriesOfOnePage);
+        // 3 min = 1800s = 1800000ms
+        const collector = interaction.channel!.createMessageComponentCollector({ time: 1800000 });
+        collector.on('collect', async i => {
+            if (i.customId === 'next_page') {
+                await i.update(this.showListWithPageButton(lang, this._genericPage(++page)));
+            } else if (i.customId === 'previous_page') {
+                await i.update(this.showListWithPageButton(lang, this._genericPage(--page)));
+            }
+        });
+        collector.on('end', collected => {
+            //console.log(`Collected ${collected.size} items`)
+            interaction.editReply({
+                components: []
+            });
+        });
+        return this.showListWithPageButton(lang, page);
     }
 }
