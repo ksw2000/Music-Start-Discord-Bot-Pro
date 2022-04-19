@@ -1,18 +1,63 @@
 # Music Start Pro
 
-![](https://img.shields.io/github/license/liao2000/Music-Start-Discord-Bot-Pro?style=flat-square) ![](https://img.shields.io/github/stars/liao2000/Music-Start-Discord-Bot-Pro?style=flat-square) ![](https://img.shields.io/github/issues/liao2000/Music-Start-Discord-Bot-Pro?color=yellow&style=flat-square)
+![](https://img.shields.io/github/license/liao2000/Music-Start-Discord-Bot-Pro?style=flat-square) ![](https://img.shields.io/github/stars/liao2000/Music-Start-Discord-Bot-Pro?style=flat-square) ![](https://img.shields.io/github/issues/liao2000/Music-Start-Discord-Bot-Pro?color=yellow&style=flat-square) [![](https://img.shields.io/discord/864220336841162756?style=flat-square)](https://discord.gg/qQM9avGy2R)
 
 ![](https://i.imgur.com/I1cH4Uc.png)
 
 Music Start Pro is a discord bot that can play YouTube music. Besides, this version supports slash command.
 
-[Click to invite bot to your guild.](https://discord.com/api/oauth2/authorize?client_id=889377515225886800&permissions=8&scope=bot%20applications.commands)
-
 The older version without supporting slash command (Traditional Chinese): [Music Start](https://github.com/liao2000/Music-Start-Discord-Bot)
 
-## How to develop?
++ [Click to invite bot to your guild.](https://discord.com/api/oauth2/authorize?client_id=889377515225886800&permissions=8&scope=bot%20applications.commands) Notice that this server is not stable.
++ [Join Discord server.](https://discord.gg/qQM9avGy2R)
 
-### STEP1 Set environment
+## Feature
+
++ `/attach` 
+  + Attach MS Pro to the voice channel where you are.
+  + At the same time, the command fetch the new instruction set if updated.
+  + Disconnect the bot by `/bye`
++ `/play [youtube-url]`
+  + Add the song to the playlist by given YouTube URL. 
+  + If MS Pro is not playing, it plays song.
++ `/lang [code]`
+  + Now support `en` and `zh`
+  + en: English
+  + zh: Traditional Chinese
++ Playlist
+  + `/list` Show the playlist.
+  + `/swap [idx1] [idx2]`Swap 2 song by index number.
+  + `/remove [idx]`Remove song by index number.
+  + `/clear` Remove all songs.
+  + `/sort` Sort the playlist in alphabetical order. 
+  + `/shuffle` Shuffle the playlist.
+  + `/distinct` Remove duplicate songs.
++ Player control
+  + `/jump [idx]` Jump to a song in the playlist by given index.
+  + `/pre` Play the previous song.
+  + `/next` Play the next song.
+  + `/vol` Show the volume.
+  + `/vol [number]` Set the volume, where number is in [0, 1]
+  + `/pause`, `/resume`, `/stop`
+
++ Batch Operation
+  + `/json` Output the playlist by json format
+  + `/json [json-string]` Add a batch of songs by given a json string
+  + `/aqours` Add Aqours' songs that author recommends into playlist.
+  + `/muse` Add some μ's' songs into playlist.
++ General index number
+  + The index is start at 0
+  + Negative number -1 stands for the last song
+  + Support overflow, e.g., we have 16 songs
+    + The first song 0 = 16
+    + The second song 1 = 17
+    + The last song 15 = 31 = -1 
+
+![](https://i.imgur.com/5B3tNMQ.png)
+
+## Develop
+
+### STEP 1 Set Environment
 
 + node: 17.5.0
 + npm: 8.4.1
@@ -25,7 +70,7 @@ npm install
 npm i ffmpeg-static
 ```
 
-### STEP2 Create Discord Application ID
+### STEP 2 Create Discord Application ID
 
 https://discord.com/developers/docs/intro
 
@@ -33,11 +78,12 @@ Create a new file at `src/token.js`.
 
 ```js
 {
-    "token": "[Your-discord-bot-token]"
+    "token": "[Your-Discord-Bot-Token]",
+    "betaToken": "[(optional, for debug) Your-Another-Discord-Bot-Token]"
 }
 ```
 
-### STEP3 Run
+### STEP 3 Run
 
 ```sh
 npm start
@@ -45,8 +91,16 @@ npm start
 
 > If you develop your discord bot in Linux, you can run `./build.sh` to build environment. Besides, you can run `./deploy.sh` which kills previous running process and deploys the new one.
 
-### STEP 4 Add bot to your guild.
+### STEP 4 Add Bot to Your Guild.
 
 ```
 https://discord.com/api/oauth2/authorize?client_id=[YOUR-CLIENT-ID]&permissions=8&scope=bot%20applications.commands
+```
+
+### STEP 5 Debug
+
+If you have run the bot on one server, you can run another bot on local for testing.
+
+```sh
+npm start beta
 ```
