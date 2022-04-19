@@ -53,8 +53,8 @@
             "zh": "排序播放清單"
         },
         "shuffle": {
-            "en": "Shuffle the playlist except for the song currently playing.",
-            "zh": "將播放清單隨機打亂，正在播放的歌位置不會受影響"
+            "en": "Shuffle the playlist.",
+            "zh": "將播放清單隨機打亂"
         },
         "next": {
             "en": "Play the next song.",
@@ -77,7 +77,7 @@
             "zh": "將作者精選的 Aqours 的歌單加入播放清單中"
         },
         "muse":{
-            "en": "Add μ's' songs that author recommends into playlist.",
+            "en": "Add some μ's' songs into playlist.",
             "zh": "將 μ's 的歌單加入播放清單中"
         },
         "lang": {
@@ -88,7 +88,7 @@
     "params": {
         "index": {
             "en": "Any integer. Start at zero. Support overflow and negative number.",
-            "zh": "index 為任意整數，由 0 開始編號，超過播放清單時自動取餘。支援負數，-1 表示最後一首"
+            "zh": "任意整數，由 0 開始編號，超過播放清單時自動取餘。-1 表示最後一首"
         },
         "volume": {
             "en": "A number in close interval [0, 1]",
@@ -99,8 +99,8 @@
             "zh": "en: English, zh: 繁體中文"
         },
         "json":{
-            "en": "json format string.",
-            "zh": "json 格式字串"
+            "en": "JSON string.",
+            "zh": "JSON 格式字串"
         }
     },
     "messages":{
@@ -131,10 +131,6 @@
         "is_shuffled":{
             "en": "Playlist has been shuffled!",
             "zh": "已將播放清單打亂，可用 /list 顯示播放清單"
-        },
-        "playlist":{
-            "en": "Playlist",
-            "zh": "播放清單"
         },
         "playlist_is_reset":{
             "en": "The playlist has been reset",
