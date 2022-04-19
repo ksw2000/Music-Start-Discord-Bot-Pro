@@ -3,7 +3,6 @@ import {
     Client,
     Interaction,
     Guild,
-    CommandInteraction,
 } from 'discord.js';
 
 import ytdl from 'ytdl-core';
@@ -194,7 +193,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
                         await interaction.followUp(`${j * batch}~${Math.min(bucket.queue.len, batch * (j + 1))}`);
                         await interaction.followUp('```\n' + JSON.stringify(url, null, '') + '\n```');
                     }
-                } 
+                }
             } else {
                 let list: Array<string> = [];
                 try {
@@ -204,11 +203,11 @@ client.on('interactionCreate', async (interaction: Interaction) => {
                     return;
                 }
                 const downloadListener = Util.sequentialEnqueueWithBatchListener();
-                downloadListener.on('progress', (current, all)=>{
-                    interaction.editReply('```yaml\n'+Util.progressBar(current, all, progressBarLen)+'\n```');
+                downloadListener.on('progress', (current, all) => {
+                    interaction.editReply('```yaml\n' + Util.progressBar(current, all, progressBarLen) + '\n```');
                 });
-                downloadListener.once('done', (all, fail)=>{
-                    interaction.editReply('```yaml\n' + Util.progressBar(all, all, progressBarLen) +' ✅\n```'+`success: ${all-fail} / fail: ${fail}`);
+                downloadListener.once('done', (all, fail) => {
+                    interaction.editReply('```yaml\n' + Util.progressBar(all, all, progressBarLen) + ' ✅\n```' + `success: ${all - fail} / fail: ${fail}`);
                 });
                 downloadListener.once('error', (e) => {
                     interaction.editReply(`${Util.randomCry()}\n${e}`);
@@ -233,7 +232,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
                 interaction.editReply('```yaml\n' + Util.progressBar(current, all, progressBarLen) + '\n```');
             });
             downloadListener.once('done', (all, fail) => {
-                interaction.editReply('```yaml\n' + Util.progressBar(all, all, 35) + ' ✅\n```'+`${done}`);
+                interaction.editReply('```yaml\n' + Util.progressBar(all, all, 35) + ' ✅\n```' + `${done}`);
             });
             downloadListener.once('error', (e) => {
                 interaction.editReply(`${Util.randomCry()}\n${e}`);
