@@ -4,10 +4,10 @@ import {
     Guild,
 } from 'discord.js';
 
-import {
-    MusicInfo
-} from './musicInfo';
-
+import { Queue } from './queue';
+import { MusicInfo } from './musicInfo';
+import { EventEmitter } from 'events';
+import ytdl from 'ytdl-core';
 const { instructions, params } = require('./language.json');
 
 export class Util {
@@ -91,7 +91,7 @@ export class Util {
             }, {
                 name: 'distinct',
                 description: instructions.distinct[lang]
-            },{
+            }, {
                 name: 'jump',
                 description: instructions.jump[lang],
                 options: [
@@ -119,7 +119,7 @@ export class Util {
                         required: true
                     }
                 ]
-            },{
+            }, {
                 name: 'remove',
                 description: instructions.remove[lang],
                 options: [
@@ -186,4 +186,57 @@ export class Util {
             }
         ]);
     }
+
+    static sequentialEnqueueWithBatchListener(): EventEmitter {
+        return new EventEmitter();
+    }
+
+    static sequentialEnQueueWithBatch(list: Array<string>, queue: Queue, listener?: EventEmitter, batch?: number) {
+        let b = batch ?? 20;
+        let done = 0;
+        let fail = 0;
+        let total = list.length;
+        let numBatches = Math.ceil(list.length / b);
+        let batchList = Array.from(Array(numBatches).keys());
+        listener?.emit('progress', 0, total);
+        batchList.reduce(async (p, j) => {
+            await p.then(async () => {
+                let task: Array<Promise<MusicInfo | null>> = [];
+                for (let i = j * b; i < Math.min(b * (j + 1), total); i++) {
+                    done++;
+                    task.push(new Promise<MusicInfo | null>((resolve, reject) => {
+                        ytdl.getInfo(list[i]).then(res => {
+                            resolve(MusicInfo.fromDetails(res));
+                        }).catch(reject);
+                    }));
+                }
+                await Promise.all(task).then(infoList => {
+                    infoList.forEach(info => {
+                        if (info != null) {
+                            queue.add(info);
+                        } else {
+                            fail++;
+                        }
+                    });
+                    listener?.emit('progress', done, total);
+                }).catch(e => listener?.emit('error', e));
+            });
+        }, Promise.resolve()).then(() => {
+            listener?.emit('done', total, fail);
+        });
+    }
+
+    static progressBar(current: number, all: number, bar: number): string {
+        let content = '[';
+        let percent = all == 0 ? 0 : Math.min(1, current / all);
+        for (let i = 0; i < Math.ceil(percent * bar); i++) {
+            content += '=';
+        }
+        for (let i = 0; i < bar - Math.ceil(percent * bar); i++) {
+            content += '.';
+        }
+        content += (all == 0) ? ']' : `] ${current} / ${all}`;
+        return content;
+    }
 }
+

@@ -197,8 +197,8 @@
             "zh": "語言切換成功！更新需要一段時間，請稍候"
         },
         "no_playlist":{
-            "en": "The playlist is empty",
-            "zh": "無播放清單"
+            "en": "(empty)",
+            "zh": "(空)"
         }
     }
 }

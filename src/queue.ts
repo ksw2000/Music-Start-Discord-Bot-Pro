@@ -1,12 +1,9 @@
 import { MusicInfo } from './musicInfo';
-import { Util } from './util';
 import { messages } from './language.json';
 import {
     MessageButton,
     MessageOptions,
     MessageActionRow,
-    MessageEmbed,
-    CommandInteraction
 } from 'discord.js';
 
 const entriesOfOnePage = 30;
@@ -48,11 +45,13 @@ export class Queue {
     }
 
     private _genericIndex(index: number) {
+        if (this.len === 0) return 0;
         index = index % this.len;
         return (index < 0) ? index + this.len : index;
     }
 
-    private _genericPage(page: number) {
+    genericPage(page: number) {
+        if (this.pages === 0) return 0;
         page = page % this.pages;
         return (page < 0) ? page + this.pages : page;
     }
@@ -155,63 +154,44 @@ export class Queue {
         }
     }
 
-    private showListByPage(page: number): string {
-        let content = '';
-        for (let i = page * entriesOfOnePage; i < Math.min((page + 1) * entriesOfOnePage, this.len); i++) {
-            content += (i == this._index)
-                ? `**${i}.\t${this._list[i].title}**\n`
-                : `${i}.\t${this._list[i].title}\n`;
+    private showListByPage(lang: string, page: number): string {
+        let content = '```yaml\n';
+        content += `page:\t${page}/${Math.max(this.pages, 1) - 1}\n`;
+        if (this.isEmpty()) {
+            content += (messages.no_playlist as langMap)[lang];
         }
-        return content;
+        for (let i = page * entriesOfOnePage; i < Math.min((page + 1) * entriesOfOnePage, this.len); i++) {
+            if (i == this._index) {
+                content += '>' + `${i}`.padStart(3, ' ') + `:\t${this._list[i].title}\n`
+            } else {
+                content += `${i}`.padStart(4, ' ') + `:\t${this._list[i].title}\n`
+            }
+        }
+        return content + '\n```';
     }
 
-    showListWithPageButton(lang: string, page: number): MessageOptions {
+    showList(lang: string, page?: number | undefined): MessageOptions {
+        page = page ?? Math.floor(this._index / entriesOfOnePage);
         const btnNext = new MessageButton()
-            .setCustomId('next_page')
+            .setCustomId(`next-${page}`)
             .setLabel('Next')
-            .setStyle('PRIMARY')
+            .setStyle('SECONDARY')
         const btnPre = new MessageButton()
-            .setCustomId('previous_page')
+            .setCustomId(`previous-${page}`)
             .setLabel('Previous')
-            .setStyle('PRIMARY')
+            .setStyle('SECONDARY')
+        const btnRefresh = new MessageButton()
+            .setCustomId('refresh')
+            .setLabel('Refresh')
+            .setStyle('SECONDARY')
 
         return {
-            embeds: [new MessageEmbed()
-                .setTitle((messages.playlist as langMap)[lang] + `\tPage: ${page}`)
-                .setColor(0x33DFFF)
-                .setDescription(this.showListByPage(page))
-            ],
+            content: this.showListByPage(lang, page),
             components: [new MessageActionRow()
                 .addComponents(btnPre)
+                .addComponents(btnRefresh)
                 .addComponents(btnNext)
             ]
         }
-    }
-
-    showList(lang: string, interaction: CommandInteraction): MessageOptions {
-        if (this.isEmpty()) {
-            return Util.createEmbedMessage((messages.playlist as langMap)[lang], (messages.no_playlist as langMap)[lang]);
-        }
-        if (this.len <= entriesOfOnePage) {
-            return Util.createEmbedMessage((messages.playlist as langMap)[lang], this.showListByPage(0));
-        }
-
-        let page = Math.floor(this._index / entriesOfOnePage);
-        // 3 min = 1800s = 1800000ms
-        const collector = interaction.channel!.createMessageComponentCollector({ time: 1800000 });
-        collector.on('collect', async i => {
-            if (i.customId === 'next_page') {
-                await i.update(this.showListWithPageButton(lang, this._genericPage(++page)));
-            } else if (i.customId === 'previous_page') {
-                await i.update(this.showListWithPageButton(lang, this._genericPage(--page)));
-            }
-        });
-        collector.on('end', collected => {
-            //console.log(`Collected ${collected.size} items`)
-            interaction.editReply({
-                components: []
-            });
-        });
-        return this.showListWithPageButton(lang, page);
     }
 }

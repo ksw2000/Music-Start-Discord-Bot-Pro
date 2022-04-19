@@ -3,8 +3,7 @@ import {
     Client,
     Interaction,
     Guild,
-    MessageComponent,
-    MessageComponentInteraction,
+    CommandInteraction,
 } from 'discord.js';
 
 import ytdl from 'ytdl-core';
@@ -12,6 +11,7 @@ import { MusicInfo } from './musicInfo';
 import { Util } from './util';
 import { Bucket } from './bucket';
 import 'process';
+
 import { messages } from './language.json';
 
 let token = process.env.DiscordToken || require('./token.json').token;
@@ -25,6 +25,7 @@ process.argv.forEach(function (val, index) {
     }
 });
 
+const progressBarLen = 35;
 const client: Client = new Client({
     intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES]
 });
@@ -46,10 +47,23 @@ client.on('error', (e: any) => {
 });
 
 client.on('interactionCreate', async (interaction: Interaction) => {
-    // not all interactions are slash command
-    if (!interaction.isCommand() || !interaction.guildId) return;
+    if (!interaction.guildId) return;
     let bucket = Bucket.find(interaction.guildId);
-    try {
+    if (interaction.isButton()) {
+        let ids = interaction.customId.split('-');
+        if (ids.length === 2) {
+            let currentPage = parseInt(ids[1]);
+            if (ids[0] === 'next') {
+                await interaction.update(bucket.queue.showList(bucket.lang, bucket.queue.genericPage(currentPage + 1)));
+            } else if (ids[0] === 'previous') {
+                await interaction.update(bucket.queue.showList(bucket.lang, bucket.queue.genericPage(currentPage - 1)));
+            }
+        } else if (ids.length === 1) {
+            if (ids[0] === 'refresh') {
+                await interaction.update(bucket.queue.showList(bucket.lang));
+            }
+        }
+    } else if (interaction.isCommand()) {
         if (interaction.commandName === 'attach') {
             Util.registerCommand(interaction.guild, bucket?.lang);
             if (bucket.connect(interaction)) {
@@ -104,11 +118,11 @@ client.on('interactionCreate', async (interaction: Interaction) => {
             bucket.queue.jump(0);
             await interaction.reply((messages.stopped as langMap)[bucket.lang]);
         } else if (interaction.commandName === 'list') {
-            await interaction.reply(bucket.queue.showList(bucket.lang, interaction));
+            await interaction.reply(bucket.queue.showList(bucket.lang));
         } else if (interaction.commandName === 'distinct') {
             // remove duplicate songs and show list
             bucket.queue.removeDuplicate();
-            await interaction.reply(bucket.queue.showList(bucket.lang, interaction));
+            await interaction.reply(bucket.queue.showList(bucket.lang));
         } else if (interaction.commandName === 'jump') {
             await interaction.deferReply();
             const index = interaction.options.get('index')?.value as number;
@@ -165,70 +179,66 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         } else if (interaction.commandName === 'json') {
             await interaction.deferReply();
             if (interaction.options.get('json') === null) {
-                // read mode
-                let url: Array<string> = [];
-                bucket.queue.list.forEach((info: MusicInfo) => {
-                    url.push(info.url.replace('https://www.youtube.com/watch?v=', ''))
-                });
-                interaction.editReply('```\n' + JSON.stringify(url, null, '') + '\n```');
+                let batch = 100;
+                if (bucket.queue.isEmpty()) {
+                    await interaction.reply((messages.no_playlist as langMap)[bucket.lang]);
+                }
+                for (let j = 0; j < bucket.queue.len / batch; j++) {
+                    let url: Array<string> = [];
+                    for (let i = batch * j; i < Math.min(bucket.queue.len, batch * (j + 1)); i++) {
+                        url.push(bucket.queue.list[i].url.replace('https://www.youtube.com/watch?v=', ''));
+                    }
+                    if (j == 0) {
+                        await interaction.editReply('```\n' + JSON.stringify(url, null, '') + '\n```');
+                    } else {
+                        await interaction.followUp(`${j * batch}~${Math.min(bucket.queue.len, batch * (j + 1))}`);
+                        await interaction.followUp('```\n' + JSON.stringify(url, null, '') + '\n```');
+                    }
+                } 
             } else {
-                // write mode
-                interaction.editReply('Adding ... (please wait a second)');
-                let list: Array<string> = JSON.parse(interaction.options.get('json')!.value as string);
-                let task: Array<Promise<MusicInfo | null>> = [];
-                list.forEach(async (urlID: string) => {
-                    task.push(new Promise<MusicInfo | null>((resolve, reject) => {
-                        ytdl.getInfo(urlID).then(res => {
-                            resolve(MusicInfo.fromDetails(res));
-                        }).catch(reject);
-                    }));
+                let list: Array<string> = [];
+                try {
+                    list = JSON.parse(interaction.options.get('json')!.value as string);
+                } catch (e) {
+                    await interaction.editReply(Util.createEmbedMessage('Error', `${e}`, true));
+                    return;
+                }
+                const downloadListener = Util.sequentialEnqueueWithBatchListener();
+                downloadListener.on('progress', (current, all)=>{
+                    interaction.editReply('```yaml\n'+Util.progressBar(current, all, progressBarLen)+'\n```');
                 });
-                Promise.all(task).then(infoList => {
-                    infoList.forEach(info => {
-                        if (info != null) {
-                            bucket.queue.add(info);
-                        }
-                    });
-                    interaction.editReply((messages.appended_to_the_playlist as langMap)[bucket.lang]);
-                }).catch(e => {
-                    interaction.editReply(Util.createEmbedMessage('Error', `${e}`, true));
+                downloadListener.once('done', (all, fail)=>{
+                    interaction.editReply('```yaml\n' + Util.progressBar(all, all, progressBarLen) +' ✅\n```'+`success: ${all-fail} / fail: ${fail}`);
                 });
+                downloadListener.once('error', (e) => {
+                    interaction.editReply(`${Util.randomCry()}\n${e}`);
+                });
+                Util.sequentialEnQueueWithBatch(list, bucket.queue, downloadListener);
             }
         } else if (interaction.commandName === 'aqours' || interaction.commandName === 'muse') {
             // fetch recommend music list
-            let recommendMusicList = require('../susume-list/' + interaction.commandName + '.json').list;
-            
-            // set interaction message
-            let reply: string = "";
-            let deferReply: string = "";
-            if (interaction.commandName === 'aqours'){
-                reply = 'Aqours... (please wait a second)';
-                deferReply = 'Aqours sunshine!';
-            }else if(interaction.commandName === 'muse'){
-                reply = "μ's... (please wait a second)";
-                deferReply = "μ's MUSIC START!";
+            let list = require('../susume-list/' + interaction.commandName + '.json').list;
+
+            // done message 
+            let done: string = "";
+            if (interaction.commandName === 'aqours') {
+                done = 'Aqours sunshine!';
+            } else if (interaction.commandName === 'muse') {
+                done = "μ's music start!";
             }
-            
-            // interact to the guild and fetch music infos on Youtube
-            interaction.reply(reply);
-            let task: Array<Promise<MusicInfo | null>> = [];
-            recommendMusicList.forEach(async (urlID: string) => {
-                task.push(new Promise<MusicInfo | null>((resolve, reject) => {
-                    ytdl.getInfo(urlID).then(res => {
-                        resolve(MusicInfo.fromDetails(res));
-                    }).catch(reject);
-                }));
+
+            await interaction.deferReply();
+            const downloadListener = Util.sequentialEnqueueWithBatchListener();
+            downloadListener.on('progress', (current, all) => {
+                interaction.editReply('```yaml\n' + Util.progressBar(current, all, progressBarLen) + '\n```');
             });
-            Promise.all(task).then(infoList => {
-                infoList.forEach(info => {
-                    if (info != null) {
-                        bucket.queue.add(info);
-                    }
-                });
-                interaction.editReply(deferReply);
-            }).catch(e => {
-                interaction.editReply(Util.createEmbedMessage('Error', `${e}`, true));
+            downloadListener.once('done', (all, fail) => {
+                interaction.editReply('```yaml\n' + Util.progressBar(all, all, 35) + ' ✅\n```'+`${done}`);
             });
+            downloadListener.once('error', (e) => {
+                interaction.editReply(`${Util.randomCry()}\n${e}`);
+            });
+            Util.sequentialEnQueueWithBatch(list, bucket.queue, downloadListener);
         } else if (interaction.commandName === 'lang') {
             let lang: string = interaction.options.get('language')?.value as string
             if (['zh', 'en'].includes(lang)) {
@@ -240,7 +250,9 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         } else {
             await interaction.reply("Command not found");
         }
-    } catch (e) {
-        console.error("main.ts big try-catch", e);
     }
-})
+});
+
+process.on('unhandledRejection', error => {
+    console.error('Unhandled promise rejection:', error);
+});
