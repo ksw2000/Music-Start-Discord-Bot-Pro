@@ -149,7 +149,7 @@ export class Bucket {
             } else if (newState.status === AudioPlayerStatus.Playing) {
                 // onstart()
                 // If the Playing state has been entered, then a new track has started playback.
-                console.log('onstart');
+                // console.log('onstart');
             }
         });
 
@@ -207,9 +207,7 @@ export class Bucket {
         try{
             this.player.play(this.resource);
         }catch(e){
-            console.log("line196");
-            console.log(e);
-            console.log("重置播放器");
+            console.error("bucket.ts play() error", e, "reset player");
             this.player = this.createPlayer();
         }
         
