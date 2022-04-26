@@ -24,6 +24,7 @@ import { Util } from './util';
 import { Queue } from './queue';
 import ytdl from 'ytdl-core';
 import { messages } from './language.json';
+import { Commands } from './commands';
 
 interface langMap{
     [key: string]: string;
@@ -34,8 +35,10 @@ export class Bucket {
     private connection: VoiceConnection | null = null;
     private interaction: CommandInteraction | Interaction | null = null;
     private resource: AudioResource | null = null;
+    private channel: VoiceChannel | null = null;
     public player: AudioPlayer = this.createPlayer();
-    private _playerErrorLock: boolean = false;   // set true when player is error
+    public verbose: boolean = true; // if set false, the player does not show the information when starting playing song.
+    private _playerErrorLock: boolean = false;   // set true when player is error.
     private _playerVolume: number = .64;
     private _lang: string = "en";
     readonly queue: Queue = new Queue();
@@ -58,18 +61,22 @@ export class Bucket {
     connect(interaction: Interaction): boolean {
         this.interaction = interaction;
         if (interaction.member instanceof GuildMember && interaction.member.voice.channel) {
-            const channel = <VoiceChannel>interaction?.member?.voice?.channel;
+            this.channel = <VoiceChannel>interaction.member.voice.channel;
             this.connection = joinVoiceChannel({
-                channelId: channel.id,
-                guildId: channel.guild.id,
+                channelId: this.channel.id,
+                guildId: this.channel.guild.id,
                 selfDeaf: true,
                 selfMute: false,
-                adapterCreator: channel.guild.voiceAdapterCreator as DiscordGatewayAdapterCreator
+                adapterCreator: this.channel.guild.voiceAdapterCreator as DiscordGatewayAdapterCreator
             });
             this.connection.subscribe(this.player);
             return true;
         }
         return false;
+    }
+    
+    disconnect() {
+        this.connection?.destroy();
     }
 
     createPlayer(): AudioPlayer {
@@ -130,16 +137,18 @@ export class Bucket {
             if (newState.status === AudioPlayerStatus.Idle && oldState.status !== AudioPlayerStatus.Idle) {
                 // If the Idle state is entered from a non-Idle state, it means that an audio resource has finished playing.
                 // The queue is then processed to start playing the next track, if one is available.
-
                 if (this._playerErrorLock) {
-                    // fake finish() i.e., error occurred
-                    console.log('重置播放器');
+                    // error occurred
+                    // fake finish()
+                    console.log('Reset player');
                     this.player = this.createPlayer();
                 } else {
                     // real finish()
                     this.queue.next(1);
-                    this.play(this.queue.current, this.interaction).then(() => {
-                        this.interaction?.channel?.send(Util.createMusicInfoMessage(this.queue.current));
+                    this.play(this.queue.current).then(() => {
+                        if(this.verbose){
+                            this.interaction?.channel?.send(Util.createMusicInfoMessage(this.queue.current));
+                        }
                     }).catch(e => {
                         this.interaction?.channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang], `${e}`, true));
                     });
@@ -148,47 +157,36 @@ export class Bucket {
                 this._playerErrorLock = false;
             } else if (newState.status === AudioPlayerStatus.Playing) {
                 // onstart()
-                // If the Playing state has been entered, then a new track has started playback.
-                // console.log('onstart');
+                // if there is no one in voice channel when the player is playing, pause.
+                if(this.channel === null || this.channel.members.first() == this.channel.members.last()){
+                    player.pause();
+                    this.interaction?.channel?.send((messages.paused_because_no_one_in_channel as langMap)[this.lang]);
+                }
             }
         });
 
         return player;
     }
 
-    disconnect() {
-        this.connection?.destroy();
-    }
-
     // play() plays music.
     // @param interaction: If the discord users call play() interaction, this param is non null.
     // @param begin: start at `begin` milliseconds
-    async play(music: MusicInfo, interaction: Interaction | CommandInteraction | null, begin?: number): Promise<void> {
-        // if the user not joined voice channel yet
-        if (this.connection === null) {
-            if (interaction) {
-                this.connect(interaction);
-            } else {
-                throw ((messages.robot_not_in_voice_channel as langMap)[this.lang]);
-            }
+    private async play(music: MusicInfo, begin?: number): Promise<void> {
+        if(this.connection === null){
+            throw ((messages.robot_not_in_voice_channel as langMap)[this.lang]);
         }
 
+        // if the user not joined voice channel yet
         const stream = ytdl(music.url, {
             quality: 'highestaudio',
             filter: 'audioonly',
             highWaterMark: 1 << 25, // 32 MB
-            // begin: This option is not very reliable for non-live videos
             begin: begin ? begin : 0,
+            // begin: This option is not very reliable for non-live videos
         });
 
         // ytdlInfo seems to be expired after a period of time
-        // const stream = ytdl.downloadFromInfo(music.ytdlInfo, {
-        //     quality: 'highestaudio',
-        //     filter: 'audioonly',
-        //     highWaterMark: 1 << 25, // 32 MB
-        //     // begin: This option is not very reliable for non-live videos
-        //     begin: begin ? begin : 0,
-        // });
+        // const stream = ytdl.downloadFromInfo(music.ytdlInfo, {...});
 
         // DEBUG
         // number - Chunk length in bytes or segment number.
@@ -204,19 +202,19 @@ export class Bucket {
             inlineVolume: true,
         });
         this.resource?.volume?.setVolume(this.volume);
+
         try{
             this.player.play(this.resource);
+            await entersState(this.player, AudioPlayerStatus.Playing, 5e3);
         }catch(e){
             console.error("bucket.ts play() error", e, "reset player");
             this.player = this.createPlayer();
         }
-        
-        await entersState(this.player, AudioPlayerStatus.Playing, 5e3);
     }
 
     // play() + edit reply
-    async playAndEditReplyDefault(music: MusicInfo, interaction: CommandInteraction | null, begin?: number) {
-        this.play(music, interaction, begin).then(() => {
+    async playAndEditReplyDefault(music: MusicInfo, interaction: CommandInteraction | null) {
+        this.play(music).then(() => {
             interaction?.editReply(Util.createMusicInfoMessage(music));
         }).catch(e => {
             interaction?.editReply(Util.createEmbedMessage((messages.error as langMap)[this.lang], `${e}`, true));
@@ -241,7 +239,7 @@ export class Bucket {
     set lang(lang: string) {
         this._lang = lang;
         if (this.interaction != null) {
-            Util.registerCommand(this.interaction.guild, this._lang);
+            Commands.register(this.interaction.guild, this._lang);
         }
     }
 }

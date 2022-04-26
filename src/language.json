@@ -68,6 +68,10 @@
             "en": "Set the volume by given `volume` or shows the volume without given `volume`. Default: 0.64",
             "zh": "設定音量，若不指定 num 則會顯示目前的音量，預設為 0.64"
         },
+        "verbose":{
+            "en": "If true, show the information of playing song when playing a new song.",
+            "zh": "若設為 true，會在播放新歌時，顯示播放資訊"
+        },
         "json": {
             "en": "Add a batch of songs by given `json` or outputs the playlist in json format without given `json`.",
             "zh": "將 json 格式的播放清單一次加入到播放清單中，若不填參數，則將目前的播放清單以 json 格式輸出"
@@ -77,8 +81,12 @@
             "zh": "將作者精選的 Aqours 的歌單加入播放清單中"
         },
         "muse":{
-            "en": "Add some μ's' songs into playlist.",
-            "zh": "將 μ's 的歌單加入播放清單中"
+            "en": "Add some μ's' songs into playlist. The list is provided by Benny",
+            "zh": "將 μ's 的歌單加入播放清單中。清單由 Benny 提供"
+        },
+        "liella":{
+            "en": "Add some Liella's songs into playlist. The list is provided by Benny",
+            "zh": "將 Liella 的歌單加入播放清單中。清單由 Benny 提供"
         },
         "lang": {
             "en": "Select language / 切換語言",
@@ -155,6 +163,10 @@
         "pause_error":{
             "en": "Pause error! Try again please",
             "zh": "暫停失敗，請再試一次"
+        },
+        "paused_because_no_one_in_channel": {
+            "en": "The player has been paused because there is no one in the voice channel.",
+            "zh": "播放器已自動暫停因為沒有人在語音頻道中"
         },
         "resume":{
             "en": "Resumed!",

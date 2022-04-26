@@ -9,6 +9,7 @@ import ytdl from 'ytdl-core';
 import { MusicInfo } from './musicInfo';
 import { Util } from './util';
 import { Bucket } from './bucket';
+import { Commands } from './commands';
 import 'process';
 
 import { messages } from './language.json';
@@ -38,7 +39,7 @@ client.once('ready', (client: any) => {
 // 游庭瑋：guild 就是指 discord 裡的一個群組(伺服器)
 client.on('guildCreate', async (guild: Guild) => {
     console.log(`guild crated! ${guild.id}`);
-    Util.registerCommand(guild);
+    Commands.register(guild);
 });
 
 client.on('error', (e: any) => {
@@ -64,7 +65,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
         }
     } else if (interaction.isCommand()) {
         if (interaction.commandName === 'attach') {
-            Util.registerCommand(interaction.guild, bucket?.lang);
+            Commands.register(interaction.guild, bucket?.lang);
             if (bucket.connect(interaction)) {
                 await interaction.reply(`☆${(messages.hello as langMap)[bucket.lang]} ${Util.randomHappy()} ☆`);
             } else {
@@ -175,6 +176,9 @@ client.on('interactionCreate', async (interaction: Interaction) => {
                     interaction.editReply(`${(messages.volume_is_changed_to as langMap)[bucket.lang]} ${vol} ${Util.randomHappy()}`);
                 }
             }
+        } else if (interaction.commandName === 'verbose') {
+            bucket.verbose = interaction.options.get('truth')?.value as boolean;
+            interaction.reply('Verbose is ' + bucket.verbose ? 'on' : 'off');
         } else if (interaction.commandName === 'json') {
             await interaction.deferReply();
             if (interaction.options.get('json') === null) {
@@ -214,9 +218,11 @@ client.on('interactionCreate', async (interaction: Interaction) => {
                 });
                 Util.sequentialEnQueueWithBatch(list, bucket.queue, downloadListener);
             }
-        } else if (interaction.commandName === 'aqours' || interaction.commandName === 'muse') {
+        } else if (interaction.commandName === 'aqours' ||
+            interaction.commandName === 'muse' ||
+            interaction.commandName === 'liella') {
             // fetch recommend music list
-            let list = require('../susume-list/' + interaction.commandName + '.json').list;
+            let list = require('../recommend/' + interaction.commandName + '.json').list;
 
             // done message 
             let done: string = "";
@@ -224,6 +230,8 @@ client.on('interactionCreate', async (interaction: Interaction) => {
                 done = 'Aqours sunshine!';
             } else if (interaction.commandName === 'muse') {
                 done = "μ's music start!";
+            } else if (interaction.commandName === 'liella') {
+                done = "Song for me, song for you, song for all!";
             }
 
             await interaction.deferReply();
