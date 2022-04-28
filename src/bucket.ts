@@ -26,16 +26,21 @@ import ytdl from 'ytdl-core';
 import { messages } from './language.json';
 import { Commands } from './commands';
 
-interface langMap{
+interface langMap {
     [key: string]: string;
 }
 
+/**
+ * An instance of Bucket represents one guild in Discord.
+ * Use Bucket.find(`id`) to fetch the instance. 
+ * Bucket.find(`id`) creates new instance if `id` is new one, else returns the instance we created.
+ */
 export class Bucket {
     private id: string;
     private connection: VoiceConnection | null = null;
     private interaction: CommandInteraction | Interaction | null = null;
+    private voiceChannel: VoiceChannel | null = null;
     private resource: AudioResource | null = null;
-    private channel: VoiceChannel | null = null;
     public player: AudioPlayer = this.createPlayer();
     public verbose: boolean = true; // if set false, the player does not show the information when starting playing song.
     private _playerErrorLock: boolean = false;   // set true when player is error.
@@ -58,46 +63,63 @@ export class Bucket {
         return this.player.state.status === 'playing';
     }
 
+    /**
+     * Join the bot to the voice channel.
+     * This method also updates the value of `this.interaction`.
+     * @param interaction
+     * @returns true if connect success
+     */
     connect(interaction: Interaction): boolean {
         this.interaction = interaction;
         if (interaction.member instanceof GuildMember && interaction.member.voice.channel) {
-            this.channel = <VoiceChannel>interaction.member.voice.channel;
+            const voiceChannel = <VoiceChannel>interaction.member.voice.channel;
+            this.voiceChannel = voiceChannel;
             this.connection = joinVoiceChannel({
-                channelId: this.channel.id,
-                guildId: this.channel.guild.id,
+                channelId: voiceChannel.id,
+                guildId: voiceChannel.guild.id,
                 selfDeaf: true,
                 selfMute: false,
-                adapterCreator: this.channel.guild.voiceAdapterCreator as DiscordGatewayAdapterCreator
+                adapterCreator: voiceChannel.guild.voiceAdapterCreator as DiscordGatewayAdapterCreator
             });
             this.connection.subscribe(this.player);
             return true;
         }
         return false;
     }
-    
+
     disconnect() {
         this.connection?.destroy();
     }
 
+    /**
+     * Create a player that automatically plays the next song when finish playing.
+     * When play the next song, show the information of it if `this.verbose` is true.
+     * 
+     * @returns an audio player object
+     */
     createPlayer(): AudioPlayer {
         const player = createAudioPlayer({
             debug: true,
             behaviors: {
-                noSubscriber: NoSubscriberBehavior.Play,
+                noSubscriber: NoSubscriberBehavior.Pause,
+            }
+        });
+
+        player.on(AudioPlayerStatus.Playing, () => {
+            // if there is no one in voice channel when the player is playing, pause.
+            if (this.voiceChannel != null && this.voiceChannel?.members.size <= 1) {
+                player.pause();
+                this.interaction?.channel?.send((messages.paused_because_no_one_in_channel as langMap)[this.lang]);
             }
         });
 
         // https://discordjs.guide/voice/audio-player.html#life-cycle
-        
         // DEBUG:
-        // player.on(AudioPlayerStatus.Playing, () => {
-        //     console.log("playing");
-        // });
-
         // player.on(AudioPlayerStatus.Buffering, () => {
         //     console.log("buffering");
         // });
 
+        // When the bot is not in any voice channels, the player is automatically paused.
         // player.on(AudioPlayerStatus.AutoPaused, () => {
         //     console.log("autoPaused");
         // });
@@ -125,7 +147,7 @@ export class Bucket {
             console.log(error.name);
             console.log(error.stack);
             this._playerErrorLock = true;
-            this.interaction?.channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang], 
+            this.interaction?.channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang],
                 `${(messages.player_error as langMap)[this.lang]} ${Util.randomCry()}`, true));
         });
 
@@ -146,7 +168,7 @@ export class Bucket {
                     // real finish()
                     this.queue.next(1);
                     this.play(this.queue.current).then(() => {
-                        if(this.verbose){
+                        if (this.verbose) {
                             this.interaction?.channel?.send(Util.createMusicInfoMessage(this.queue.current));
                         }
                     }).catch(e => {
@@ -157,22 +179,19 @@ export class Bucket {
                 this._playerErrorLock = false;
             } else if (newState.status === AudioPlayerStatus.Playing) {
                 // onstart()
-                // if there is no one in voice channel when the player is playing, pause.
-                if(this.channel === null || this.channel.members.first() == this.channel.members.last()){
-                    player.pause();
-                    this.interaction?.channel?.send((messages.paused_because_no_one_in_channel as langMap)[this.lang]);
-                }
             }
         });
 
         return player;
     }
 
-    // play() plays music.
-    // @param interaction: If the discord users call play() interaction, this param is non null.
-    // @param begin: start at `begin` milliseconds
+    /**
+     * Plays music on `this.player` by given MusicInfo.
+     * @param music
+     * @param begin start at `begin` milliseconds
+     */
     private async play(music: MusicInfo, begin?: number): Promise<void> {
-        if(this.connection === null){
+        if (this.connection === null) {
             throw ((messages.robot_not_in_voice_channel as langMap)[this.lang]);
         }
 
@@ -203,10 +222,10 @@ export class Bucket {
         });
         this.resource?.volume?.setVolume(this.volume);
 
-        try{
+        try {
             this.player.play(this.resource);
             await entersState(this.player, AudioPlayerStatus.Playing, 5e3);
-        }catch(e){
+        } catch (e) {
             console.error("bucket.ts play() error", e, "reset player");
             this.player = this.createPlayer();
         }
