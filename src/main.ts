@@ -178,7 +178,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
             }
         } else if (interaction.commandName === 'verbose') {
             bucket.verbose = interaction.options.get('truth')?.value as boolean;
-            interaction.reply('Verbose is ' + bucket.verbose ? 'on' : 'off');
+            interaction.reply(Util.createEmbedMessage('verbose: ', bucket.verbose ? 'on' : 'off'));
         } else if (interaction.commandName === 'json') {
             await interaction.deferReply();
             if (interaction.options.get('json') === null) {
@@ -220,7 +220,8 @@ client.on('interactionCreate', async (interaction: Interaction) => {
             }
         } else if (interaction.commandName === 'aqours' ||
             interaction.commandName === 'muse' ||
-            interaction.commandName === 'liella') {
+            interaction.commandName === 'liella' ||
+            interaction.commandName === 'nijigasaki') {
             // fetch recommend music list
             let list = require('../recommend/' + interaction.commandName + '.json').list;
 
@@ -232,6 +233,8 @@ client.on('interactionCreate', async (interaction: Interaction) => {
                 done = "μ's music start!";
             } else if (interaction.commandName === 'liella') {
                 done = "Song for me, song for you, song for all!";
+            } else if (interaction.commandName === 'nijigasaki') {
+                done = "";
             }
 
             await interaction.deferReply();

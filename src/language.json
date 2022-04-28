@@ -88,6 +88,10 @@
             "en": "Add some Liella's songs into playlist. The list is provided by Benny",
             "zh": "將 Liella 的歌單加入播放清單中。清單由 Benny 提供"
         },
+        "nijigasaki":{
+            "en": "Add some Nijigasaki's songs into playlist. The list is provided by Benny",
+            "zh": "將虹團的歌單加入播放清單中。清單由 Benny 提供"
+        },
         "lang": {
             "en": "Select language / 切換語言",
             "zh": "Select language / 切換語言"

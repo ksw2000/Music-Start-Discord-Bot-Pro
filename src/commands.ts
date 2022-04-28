@@ -1,4 +1,4 @@
-import {Guild} from 'discord.js';
+import { Guild } from 'discord.js';
 const { instructions, params } = require('./language.json');
 
 export class Commands {
@@ -108,15 +108,15 @@ export class Commands {
             }, {
                 name: 'verbose',
                 description: instructions.verbose[lang],
-                options:[
+                options: [
                     {
                         name: 'truth',
                         type: 'BOOLEAN',
                         description: 'true/false',
                         required: true
-                    }    
+                    }
                 ]
-            },{
+            }, {
                 name: 'json',
                 description: instructions.json[lang],
                 options: [
@@ -136,6 +136,9 @@ export class Commands {
             }, {
                 name: 'liella',
                 description: instructions.liella[lang]
+            }, {
+                name: 'nijigasaki',
+                description: instructions.nijigasaki[lang]
             }, {
                 name: 'lang',
                 description: instructions.lang[lang],
