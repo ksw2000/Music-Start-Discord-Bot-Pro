@@ -149,6 +149,10 @@ export class Bucket {
             this._playerErrorLock = true;
             this.interaction?.channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang],
                 `${(messages.player_error as langMap)[this.lang]} ${Util.randomCry()}`, true));
+            console.log('Reset player');
+            this.player = this.createPlayer();
+            // disconnect from voice channel
+            this.disconnect();
         });
 
         // this block handles
@@ -162,8 +166,7 @@ export class Bucket {
                 if (this._playerErrorLock) {
                     // error occurred
                     // fake finish()
-                    console.log('Reset player');
-                    this.player = this.createPlayer();
+                    console.log('Error line169 bucket.ts');
                 } else {
                     // real finish()
                     this.queue.next(1);
