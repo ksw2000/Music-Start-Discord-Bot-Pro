@@ -90,10 +90,18 @@ export class Commands {
                 description: instructions.shuffle[lang]
             }, {
                 name: 'next',
-                description: instructions.next[lang]
+                description: instructions.next[lang],
+                options: [
+                    {
+                        name: 'offset',
+                        type: 'NUMBER',
+                        description: params.offset[lang],
+                        required: false
+                    }
+                ]
             }, {
                 name: 'pre',
-                description: instructions.next[lang]
+                description: instructions.pre[lang]
             }, {
                 name: 'vol',
                 description: instructions.vol[lang],
@@ -130,6 +138,9 @@ export class Commands {
             }, {
                 name: 'aqours',
                 description: instructions.aqours[lang]
+            }, {
+                name: 'azalea',
+                description: instructions.azalea[lang]
             }, {
                 name: 'muse',
                 description: instructions.muse[lang]
