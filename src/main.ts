@@ -100,23 +100,31 @@ client.on('interactionCreate', async (interaction: Interaction) => {
                 await bucket.playAndEditReplyDefault(bucket.queue.current, interaction);
             }
         } else if (interaction.commandName === 'pause') {
-            if (bucket.player.pause()) {
+            if (bucket.queue.isEmpty()) {
+                await interaction.reply((messages.playlist_is_empty_error as langMap)[bucket.lang]);
+            } else if (bucket.player.pause()) {
                 await interaction.reply((messages.paused as langMap)[bucket.lang]);
             } else {
                 await interaction.reply(Util.createEmbedMessage((messages.error as langMap)[bucket.lang],
                     `${(messages.pause_error as langMap)[bucket.lang]} ${Util.randomCry()}`, true));
             }
         } else if (interaction.commandName === 'resume') {
-            if (bucket.player.unpause()) {
+            if (bucket.queue.isEmpty()) {
+                await interaction.reply((messages.playlist_is_empty_error as langMap)[bucket.lang]);
+            } else if (bucket.player.unpause()) {
                 await interaction.reply((messages.resume as langMap)[bucket.lang]);
             } else {
                 await interaction.reply(Util.createEmbedMessage((messages.error as langMap)[bucket.lang],
                     `${(messages.resume_error as langMap)[bucket.lang]} ${Util.randomCry()}`, true));
             }
         } else if (interaction.commandName === 'stop') {
-            bucket.player.pause();
-            bucket.queue.jump(0);
-            await interaction.reply((messages.stopped as langMap)[bucket.lang]);
+            if (bucket.queue.isEmpty()) {
+                await interaction.reply((messages.playlist_is_empty_error as langMap)[bucket.lang]);
+            } else {
+                bucket.player.pause();
+                bucket.queue.jump(0);
+                await interaction.reply((messages.stopped as langMap)[bucket.lang]);
+            }
         } else if (interaction.commandName === 'list') {
             await interaction.reply(bucket.queue.showList(bucket.lang));
         } else if (interaction.commandName === 'distinct') {
@@ -124,16 +132,28 @@ client.on('interactionCreate', async (interaction: Interaction) => {
             bucket.queue.removeDuplicate();
             await interaction.reply(bucket.queue.showList(bucket.lang));
         } else if (interaction.commandName === 'jump') {
+            if (bucket.queue.isEmpty()) {
+                await interaction.reply((messages.playlist_is_empty_error as langMap)[bucket.lang]);
+                return
+            }
             await interaction.deferReply();
             const index = interaction.options.get('index')?.value as number;
             bucket.queue.jump(index);
             await bucket.playAndEditReplyDefault(bucket.queue.current, interaction);
         } else if (interaction.commandName === 'swap') {
+            if (bucket.queue.isEmpty()) {
+                await interaction.reply((messages.playlist_is_empty_error as langMap)[bucket.lang]);
+                return;
+            }
             const index1 = interaction.options.get('index1')?.value as number;
             const index2 = interaction.options.get('index2')?.value as number;
             bucket.queue.swap(index1, index2);
             await interaction.reply("Done!");
         } else if (interaction.commandName === 'remove') {
+            if (bucket.queue.isEmpty()) {
+                await interaction.reply((messages.playlist_is_empty_error as langMap)[bucket.lang]);
+                return;
+            }
             const index = interaction.options.get('index')?.value as number;
             // if remove success
             if (bucket.queue.remove(index, bucket.playing)) {
@@ -150,16 +170,32 @@ client.on('interactionCreate', async (interaction: Interaction) => {
             bucket.queue.removeAll();
             await interaction.reply((messages.playlist_is_reset as langMap)[bucket.lang]);
         } else if (interaction.commandName === 'sort') {
+            if (bucket.queue.isEmpty()) {
+                await interaction.reply((messages.playlist_is_empty_error as langMap)[bucket.lang]);
+                return;
+            }
             bucket.queue.sort();
             await interaction.reply(`${(messages.is_sorted as langMap)[bucket.lang]} ${Util.randomHappy()}`);
         } else if (interaction.commandName === 'shuffle') {
             bucket.queue.shuffle();
             await interaction.reply(`${(messages.is_shuffled as langMap)[bucket.lang]} ${Util.randomHappy()}`);
         } else if (interaction.commandName === 'next') {
+            if (bucket.queue.isEmpty()) {
+                await interaction.reply((messages.playlist_is_empty_error as langMap)[bucket.lang]);
+                return;
+            }
+            let offset: number = 1;
+            if (interaction.options.get("offset") != null) {
+                offset = interaction.options.get("offset")!.value as number;
+            }
             await interaction.deferReply();
-            bucket.queue.next(1);
+            bucket.queue.next(offset);
             await bucket.playAndEditReplyDefault(bucket.queue.current, interaction);
         } else if (interaction.commandName === 'pre') {
+            if (bucket.queue.isEmpty()) {
+                await interaction.reply((messages.playlist_is_empty_error as langMap)[bucket.lang]);
+                return;
+            }
             await interaction.deferReply();
             bucket.queue.next(-1);
             await bucket.playAndEditReplyDefault(bucket.queue.current, interaction);
@@ -184,7 +220,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
             if (interaction.options.get('json') === null) {
                 let batch = 100;
                 if (bucket.queue.isEmpty()) {
-                    await interaction.reply((messages.no_playlist as langMap)[bucket.lang]);
+                    await interaction.reply((messages.playlist_is_empty as langMap)[bucket.lang]);
                 }
                 for (let j = 0; j < bucket.queue.len / batch; j++) {
                     let url: Array<string> = [];
@@ -219,6 +255,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
                 Util.sequentialEnQueueWithBatch(list, bucket.queue, downloadListener);
             }
         } else if (interaction.commandName === 'aqours' ||
+            interaction.commandName === 'azalea' ||
             interaction.commandName === 'muse' ||
             interaction.commandName === 'liella' ||
             interaction.commandName === 'nijigasaki') {
@@ -229,6 +266,8 @@ client.on('interactionCreate', async (interaction: Interaction) => {
             let done: string = "";
             if (interaction.commandName === 'aqours') {
                 done = 'Aqours sunshine!';
+            } else if (interaction.commandName === 'azalea') {
+                done = "AZALEAです";
             } else if (interaction.commandName === 'muse') {
                 done = "μ's music start!";
             } else if (interaction.commandName === 'liella') {

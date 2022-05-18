@@ -158,7 +158,7 @@ export class Queue {
         let content = '```yaml\n';
         content += `page:\t${page}/${Math.max(this.pages, 1) - 1}\n`;
         if (this.isEmpty()) {
-            content += (messages.no_playlist as langMap)[lang];
+            content += (messages.playlist_is_empty as langMap)[lang];
         }
         for (let i = page * entriesOfOnePage; i < Math.min((page + 1) * entriesOfOnePage, this.len); i++) {
             if (i == this._index) {
