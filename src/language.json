@@ -4,13 +4,13 @@
             "en": "Attach MS Pro to the voice channel where you are and fetch new instructions if updated.",
             "zh": "將 Music Start Pro 加入您目前所在的語音房中，另外，當 Music Start Pro 更新指令時，可刷新指令集"
         },
-        "bye": {
+        "detach": {
             "en": "Detach Music Start Pro from the voice channel.",
             "zh": "將 Music Start Pro 踢出語音房"
         },
-        "play": {
-            "en": "Play music if the bot is not playing any song. Otherwise, add the song to the playlist.",
-            "zh": "播放音樂，若音樂正在播放，則會加入播放清單。若 Music Start Pro 不在語音房中，則會自動呼叫 /attach 加入您目前所在的語音房"
+        "append":{
+            "en": "Append the song to the playlist.",
+            "zh": "將歌曲加入播放清單"
         },
         "pause": {
             "en": "Pause the player.",
@@ -23,6 +23,10 @@
         "stop": {
             "en": "Stop the player and jump to the first song of the playlist.",
             "zh": "停止播放，並回到播放清單最前端"
+        },
+        "repeat":{
+            "en": "Toggle repeat mode. If on, repeats the current song.",
+            "zh": "重複播放當前歌曲。透過同個指令取消"
         },
         "list": {
             "en": "Show the playlist with index.",
@@ -102,6 +106,10 @@
         }
     },
     "params": {
+        "youtube":{
+            "en": "YouTube URL or YouTube video ID.",
+            "zh": "YouTube URL 或 YouTube video ID."
+        },
         "index": {
             "en": "Any integer. Start at zero. Support overflow and negative number.",
             "zh": "任意整數，由 0 開始編號，超過播放清單時自動取餘。-1 表示最後一首"
@@ -176,6 +184,14 @@
             "en": "Stopped",
             "zh": "已停止播放"
         },
+        "repeat_on": {
+            "en": "Repeat mode is turned on.",
+            "zh": "已啟用單曲循環模式"
+        },
+        "repeat_off":{
+            "en": "Repeat mode is turned off.",
+            "zh": "已關閉單曲循環模式"
+        },
         "paused": {
             "en": "Paused! Please use /resume to resume",
             "zh": "音樂已暫停使用 /resume 以繼續"
@@ -200,9 +216,9 @@
             "en": "Song is not found",
             "zh": "找不到曲目"
         },
-        "bye": {
-            "en": "Bye! have a nice day!",
-            "zh": "ㄅㄅ"
+        "detach": {
+            "en": "Detached.",
+            "zh": "Music Start Pro 已脫離語音房"
         },
         "hello": {
             "en": "Hello! Welcome to Music Start Pro",

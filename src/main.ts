@@ -13,6 +13,7 @@ import { Commands } from './commands';
 import 'process';
 
 import { messages } from './language.json';
+import *  as fs from 'fs';
 
 let token = process.env.DiscordToken || require('./token.json').token;
 interface langMap {
@@ -24,6 +25,11 @@ process.argv.forEach(function (val, index) {
         token = require('./token.json').betaToken;
     }
 });
+
+// load buckets
+if(fs.existsSync('data.json')){
+    Bucket.load();
+}
 
 const progressBarLen = 35;
 const client: Client = new Client({
@@ -71,51 +77,38 @@ client.on('interactionCreate', async (interaction: Interaction) => {
             } else {
                 await interaction.reply(`${(messages.attach_fail as langMap)[bucket.lang]} ${Util.randomCry()}`);
             }
-        } else if (interaction.commandName === 'bye') {
+        } else if (interaction.commandName === 'detach') {
             bucket.player.pause();
             bucket.disconnect();
-            await interaction.reply(`${(messages.bye as langMap)[bucket.lang]} ${Util.randomHappy()}`);
-        } else if (interaction.commandName === 'play') {
+            await interaction.reply(`${(messages.detach as langMap)[bucket.lang]} ${Util.randomHappy()}`);
+        } else if (interaction.commandName === 'append') {
             await interaction.deferReply();
             const url = interaction.options.get('url')?.value as string;
             if (!ytdl.validateURL(url) && !ytdl.validateID(url)) {
                 interaction.editReply(Util.createEmbedMessage((messages.error as langMap)[bucket.lang],
-                    `${(messages.song_is_not_found as langMap)[bucket.lang]} ${Util.randomCry()}`, true));
+                `${(messages.song_is_not_found as langMap)[bucket.lang]} ${Util.randomCry()}`, true));
                 return;
             }
             const res = await ytdl.getInfo(url);
             const info = MusicInfo.fromDetails(res);
-
-            // 1. enQueue
+            
             if (info !== null) {
                 bucket.queue.add(info);
                 interaction.editReply(Util.createEmbedMessage((messages.appended_to_the_playlist as langMap)[bucket.lang], info.title));
             } else {
                 interaction.editReply(Util.createEmbedMessage((messages.error as langMap)[bucket.lang],
-                    `${(messages.song_is_not_found as langMap)[bucket.lang]} ${Util.randomCry()}`, true));
+                `${(messages.song_is_not_found as langMap)[bucket.lang]} ${Util.randomCry()}`, true));
             }
-
-            // 2. play if the player is not playing
-            if (!bucket.playing) {
-                await bucket.playAndEditReplyDefault(bucket.queue.current, interaction);
-            }
-        } else if (interaction.commandName === 'pause') {
+        } else if (interaction.commandName === 'pause' || interaction.commandName === 'resume') {
             if (bucket.queue.isEmpty()) {
                 await interaction.reply((messages.playlist_is_empty_error as langMap)[bucket.lang]);
-            } else if (bucket.player.pause()) {
+            } else if (interaction.commandName === 'pause' && bucket.player.pause()){
                 await interaction.reply((messages.paused as langMap)[bucket.lang]);
-            } else {
-                await interaction.reply(Util.createEmbedMessage((messages.error as langMap)[bucket.lang],
-                    `${(messages.pause_error as langMap)[bucket.lang]} ${Util.randomCry()}`, true));
-            }
-        } else if (interaction.commandName === 'resume') {
-            if (bucket.queue.isEmpty()) {
-                await interaction.reply((messages.playlist_is_empty_error as langMap)[bucket.lang]);
-            } else if (bucket.player.unpause()) {
+            } else if (interaction.commandName === 'resume' && bucket.player.unpause()){
                 await interaction.reply((messages.resume as langMap)[bucket.lang]);
             } else {
                 await interaction.reply(Util.createEmbedMessage((messages.error as langMap)[bucket.lang],
-                    `${(messages.resume_error as langMap)[bucket.lang]} ${Util.randomCry()}`, true));
+                    `${(messages.pause_error as langMap)[bucket.lang]} ${Util.randomCry()}`, true));
             }
         } else if (interaction.commandName === 'stop') {
             if (bucket.queue.isEmpty()) {
@@ -125,13 +118,24 @@ client.on('interactionCreate', async (interaction: Interaction) => {
                 bucket.queue.jump(0);
                 await interaction.reply((messages.stopped as langMap)[bucket.lang]);
             }
-        } else if (interaction.commandName === 'list') {
+        } else if(interaction.commandName === 'repeat'){
+            if (bucket.queue.isEmpty()) {
+                await interaction.reply((messages.playlist_is_empty_error as langMap)[bucket.lang]);
+            } else {
+                var currentState: boolean  = bucket.toggleRepeat();
+                if(currentState){
+                    await interaction.reply((messages.repeat_on as langMap)[bucket.lang]);
+                }else{
+                    await interaction.reply((messages.repeat_off as langMap)[bucket.lang]);
+                }
+            }
+        } else if (interaction.commandName === 'list' || interaction.commandName === 'distinct') {
+            if (interaction.commandName === 'distinct'){
+                // remove duplicate songs and show list
+                bucket.queue.removeDuplicate();
+            }
             await interaction.reply(bucket.queue.showList(bucket.lang));
-        } else if (interaction.commandName === 'distinct') {
-            // remove duplicate songs and show list
-            bucket.queue.removeDuplicate();
-            await interaction.reply(bucket.queue.showList(bucket.lang));
-        } else if (interaction.commandName === 'jump') {
+        } else if (interaction.commandName === 'jump' || interaction.commandName === 'go') {
             if (bucket.queue.isEmpty()) {
                 await interaction.reply((messages.playlist_is_empty_error as langMap)[bucket.lang]);
                 return

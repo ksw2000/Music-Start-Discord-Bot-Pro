@@ -48,6 +48,7 @@ export class Util {
             }
             description += `:heart:　${Util.humanReadNum(info.likes)}`;
         }
+        description += `　:ear:　${Util.humanReadNum(info.playCounter)}`;
         return Util.createEmbedMessage(info?.title, description);
     }
 

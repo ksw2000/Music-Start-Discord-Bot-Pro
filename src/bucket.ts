@@ -25,6 +25,7 @@ import { Queue } from './queue';
 import ytdl from 'ytdl-core';
 import { messages } from './language.json';
 import { Commands } from './commands';
+import *  as fs from 'fs';
 
 interface langMap {
     [key: string]: string;
@@ -46,7 +47,36 @@ export class Bucket {
     private _playerErrorLock: boolean = false;   // set true when player is error.
     private _playerVolume: number = .64;
     private _lang: string = "en";
+    private _repeat: boolean = false;
     readonly queue: Queue = new Queue();
+
+    static load(){
+        var data = JSON.parse(fs.readFileSync('data.json', { encoding: 'utf-8', flag: 'r' }));
+        Object.keys(data).forEach((k: any)=>{
+            var e = data[k];
+            var bucket = new Bucket(e.id);
+            bucket.lang = e.lang;
+            bucket.volume = e.volume;
+            e.queue.forEach((f:any)=>{
+                bucket.queue.add(new MusicInfo(f.url, f.title, f.likes, f.viewCount, f.playCounter));
+            });
+            Bucket.instant.set(k, bucket); 
+        });
+    }
+
+    // store all instance of Bucket
+    store() {
+        var ret: any = {};
+        Bucket.instant.forEach((e: Bucket) => {
+            ret[e.id] = {
+                lang: this.lang,
+                volume: this.volume,
+                queue: this.queue.toList()
+            }
+        });
+
+        fs.writeFileSync('data.json', JSON.stringify(ret), { flag: 'w' });
+    }
 
     static instant: Map<string, Bucket> = new Map();
 
@@ -169,13 +199,18 @@ export class Bucket {
                     console.log('Error line169 bucket.ts');
                 } else {
                     // real finish()
-                    this.queue.next(1);
+                    // update play counter
+                    this.queue.current.playCounter++;
+                    this.store();
+
+                    if (!this._repeat) {
+                        this.queue.next(1);
+                    }
+
                     this.play(this.queue.current).then(() => {
                         if (this.verbose) {
                             this.interaction?.channel?.send(Util.createMusicInfoMessage(this.queue.current));
                         }
-                    }).catch(e => {
-                        this.interaction?.channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang], `${e}`, true));
                     });
                 }
 
@@ -197,7 +232,7 @@ export class Bucket {
         if (this.connection === null) {
             throw ((messages.robot_not_in_voice_channel as langMap)[this.lang]);
         }
-
+        
         // if the user not joined voice channel yet
         const stream = ytdl(music.url, {
             quality: 'highestaudio',
@@ -206,7 +241,7 @@ export class Bucket {
             begin: begin ? begin : 0,
             // begin: This option is not very reliable for non-live videos
         });
-
+        
         // ytdlInfo seems to be expired after a period of time
         // const stream = ytdl.downloadFromInfo(music.ytdlInfo, {...});
 
@@ -215,8 +250,8 @@ export class Bucket {
         // number - Total bytes or segments downloaded.
         // number - Total bytes or segments.
         // stream.on('progress', (chunkSize, downloadedSize, totalSize) => {
-        //     this._playerDownloadedChunk = downloadedSize;
-        //     this._playerTotalChunk = totalSize;
+            //     this._playerDownloadedChunk = downloadedSize;
+            //     this._playerTotalChunk = totalSize;
         // });
 
         this.resource = createAudioResource(stream, {
@@ -229,11 +264,16 @@ export class Bucket {
             this.player.play(this.resource);
             await entersState(this.player, AudioPlayerStatus.Playing, 5e3);
         } catch (e) {
-            console.error("bucket.ts play() error", e, "reset player");
+            this.interaction?.channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang], `${e}`, true));
+            console.error("line237 bucket.ts play() error", e, "reset player");
             this.player = this.createPlayer();
+            if (this.interaction != null) {
+                this.connect(this.interaction);
+            }
+            this.interaction?.channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang], 'Try /attach again', true));
         }
     }
-
+    
     // play() + edit reply
     async playAndEditReplyDefault(music: MusicInfo, interaction: CommandInteraction | null) {
         this.play(music).then(() => {
@@ -241,6 +281,12 @@ export class Bucket {
         }).catch(e => {
             interaction?.editReply(Util.createEmbedMessage((messages.error as langMap)[this.lang], `${e}`, true));
         });
+    }
+
+    // @return final `repeat` state
+    toggleRepeat() {
+        this._repeat = !this._repeat;
+        return this._repeat;
     }
 
     get volume(): number {

@@ -11,21 +11,21 @@ export class Commands {
                 description: instructions.attach[lang]
             },
             {
-                name: 'bye',
-                description: instructions.bye[lang]
+                name: 'detach',
+                description: instructions.detach[lang]
             },
             {
-                name: 'play',
-                description: instructions.play[lang],
+                name: 'append',
+                description: instructions.append[lang],
                 options: [
                     {
-                        name: 'url',
+                        name: 'youtube',
                         type: 'STRING',
-                        description: '參數為 Youtube 連結',
+                        description: params.youtube[lang],
                         required: true
                     }
                 ]
-            }, {
+            },{
                 name: 'pause',
                 description: instructions.pause[lang]
             }, {
@@ -34,6 +34,9 @@ export class Commands {
             }, {
                 name: 'stop',
                 description: instructions.stop[lang]
+            }, {
+                name: 'repeat',
+                description: instructions.repeat[lang]
             }, {
                 name: 'list',
                 description: instructions.list[lang]

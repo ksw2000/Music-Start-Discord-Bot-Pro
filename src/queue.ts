@@ -12,6 +12,10 @@ interface langMap {
     [key: string]: string;
 }
 
+interface QueueElement {
+    [key: string]: string;
+}
+
 export class Queue {
     private _list: Array<MusicInfo>;
     private _index: number;
@@ -193,5 +197,19 @@ export class Queue {
                 .addComponents(btnNext)
             ]
         }
+    }
+
+    toList(): any[] {
+        var ret: any[] = [];
+        this._list.forEach((music)=>{
+            ret.push({
+                url: music.url,
+                title: music.title,
+                likes: music.likes,
+                viewCount: music.viewCount,
+                playCounter: music.playCounter
+            });
+        });
+        return ret;
     }
 }
