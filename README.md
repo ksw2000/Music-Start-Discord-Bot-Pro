@@ -14,12 +14,13 @@ The older version without supporting slash command (Traditional Chinese): [Music
 ## Feature
 
 + `/attach` 
-  + Attach MS Pro to the voice channel where you are.
-  + At the same time, the command fetch the new instruction set if updated.
-  + Disconnect the bot by `/bye`
-+ `/play [youtube-url]`
-  + Add the song to the playlist by given YouTube URL. 
-  + If MS Pro is not playing, it plays song.
+  + Attach MS Pro to the voice channel where you are. Thus, you must join in the voice cannel first.
+  + At the same time, the command fetch the new instructions set if updated.
+  + You can detach the MS Pro by `/detach`.
+  + If you move the MS Pro to another voice channel, please type `/attach` again after move.
++ `/append [youtube-url]`
+  + Append the song into the playlist by given YouTube URL.
+  + You can just input the video id. That is, if you want to play `https://www.youtube.com/watch?v=Qj0Dmwxv-KY`, you can just `/append Qj0Dmwxv-KY`
 + `/lang [code]`
   + Now support `en` and `zh`
   + en: English
@@ -39,12 +40,13 @@ The older version without supporting slash command (Traditional Chinese): [Music
   + `/vol` Show the volume.
   + `/vol [number]` Set the volume, where number is in [0, 1]
   + `/pause`, `/resume`, `/stop`
-
 + Batch Operation
   + `/json` Output the playlist by json format
   + `/json [json-string]` Add a batch of songs by given a json string
-  + `/aqours` Add Aqours' songs that author recommends into playlist.
-  + `/muse` Add some μ's' songs into playlist.
+  + `/aqours` Append Aqours' songs that author recommends into playlist.
+  + `/muse` Append some μ's' songs into playlist.
+  + `/nijigasaki` Append some 虹ヶ咲's songs into playlist.
+  + `/liella` Append some Liella' songs into playlist.
 + General index number
   + The index is start at 0
   + Negative number -1 stands for the last song
@@ -102,5 +104,13 @@ https://discord.com/api/oauth2/authorize?client_id=[YOUR-CLIENT-ID]&permissions=
 If you have run the bot on one server, you can run another bot on local for testing.
 
 ```sh
-npm start beta
+npm run beta
 ```
+
+### Pull Request
+
+Before pull requesting, please use lint to format code.
+
+```sh
+npm run lint
+``` 
