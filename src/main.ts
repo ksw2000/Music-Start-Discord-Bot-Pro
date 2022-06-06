@@ -83,9 +83,9 @@ client.on('interactionCreate', async (interaction: Interaction) => {
             await interaction.reply(`${(messages.detach as langMap)[bucket.lang]} ${Util.randomHappy()}`);
         } else if (interaction.commandName === 'append') {
             await interaction.deferReply();
-            const url = interaction.options.get('url')?.value as string;
+            const url = interaction.options.get('youtube')?.value as string;
             if (!ytdl.validateURL(url) && !ytdl.validateID(url)) {
-                interaction.editReply(Util.createEmbedMessage((messages.error as langMap)[bucket.lang],
+                await interaction.editReply(Util.createEmbedMessage((messages.error as langMap)[bucket.lang],
                 `${(messages.song_is_not_found as langMap)[bucket.lang]} ${Util.randomCry()}`, true));
                 return;
             }
@@ -94,9 +94,9 @@ client.on('interactionCreate', async (interaction: Interaction) => {
             
             if (info !== null) {
                 bucket.queue.add(info);
-                interaction.editReply(Util.createEmbedMessage((messages.appended_to_the_playlist as langMap)[bucket.lang], info.title));
+                await interaction.editReply(Util.createEmbedMessage((messages.appended_to_the_playlist as langMap)[bucket.lang], info.title));
             } else {
-                interaction.editReply(Util.createEmbedMessage((messages.error as langMap)[bucket.lang],
+                await interaction.editReply(Util.createEmbedMessage((messages.error as langMap)[bucket.lang],
                 `${(messages.song_is_not_found as langMap)[bucket.lang]} ${Util.randomCry()}`, true));
             }
         } else if (interaction.commandName === 'pause' || interaction.commandName === 'resume') {

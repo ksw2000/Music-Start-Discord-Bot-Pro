@@ -225,7 +225,7 @@
             "zh": "歡迎使用 Music Start Pro!"
         },
         "attach_fail": {
-            "en": "Hello! Welcome to use Music Start Pro",
+            "en": "/attach file, Please enter any voice channel first.",
             "zh": "/attach 失敗，Music Start Pro 無法加入語音頻道。請確定您已經進入語音頻道。"
         },
         "player_error": {
