@@ -10,7 +10,7 @@ import ytdl from 'ytdl-core';
 
 export class Util {
     static randomHappy() {
-        const emojis = ['(*´∀`)~♥', 'σ`∀´)σ', '(〃∀〃)', '(శωశ)', '(✪ω✪)', '(๑´ㅂ`๑)', '(◕ܫ◕)', '( • ̀ω•́ )', '(*ﾟ∀ﾟ*)', '(灬ºωº灬)'];
+        const emojis = ['(*´∀`)~♥', 'σ`∀´)σ', '(〃∀〃)', '(✪ω✪)', '(๑´ㅂ`๑)', '(◕ܫ◕)', '( • ̀ω•́ )', '(*ﾟ∀ﾟ*)', '(灬ºωº灬)'];
         return emojis[~~(Math.random() * emojis.length)];
     }
 
