@@ -36,6 +36,10 @@
             "en": "Remove duplicate songs.",
             "zh": "刪除重複歌曲"
         },
+        "current":{
+            "en": "Show the current information",
+            "zh": "顯示當前資訊"
+        },
         "jump": {
             "en": "Jump to a song in the playlist by given index.",
             "zh": "根據索引跳到播放清單的某一首歌"

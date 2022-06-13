@@ -135,7 +135,15 @@ client.on('interactionCreate', async (interaction: Interaction) => {
                 bucket.queue.removeDuplicate();
             }
             await interaction.reply(bucket.queue.showList(bucket.lang));
-        } else if (interaction.commandName === 'jump' || interaction.commandName === 'go') {
+        } else if(interaction.commandName === 'current'){
+            var description: string = `Volume: ${bucket.volume}\n`;
+            description += `Is playing: ${bucket.playing ? "yes" : "no"}\n`;
+            description += `Number of songs: ${bucket.queue.len}`;
+            await interaction.reply(Util.createEmbedMessage("current", description));
+            if(bucket.playing){
+                await interaction.followUp(Util.createMusicInfoMessage(bucket.queue.current));
+            }
+        }else if (interaction.commandName === 'jump' || interaction.commandName === 'go') {
             if (bucket.queue.isEmpty()) {
                 await interaction.reply((messages.playlist_is_empty_error as langMap)[bucket.lang]);
                 return
@@ -213,7 +221,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
                     interaction.editReply(`${(messages.volume_format_error as langMap)[bucket.lang]} ${Util.randomCry()}`);
                 } else {
                     bucket.volume = vol;
-                    interaction.editReply(`${(messages.volume_is_changed_to as langMap)[bucket.lang]} ${vol} ${Util.randomHappy()}`);
+                    interaction.editReply(`${(messages.volume_is_changed_to as langMap)[bucket.lang]}　${vol} ${Util.randomHappy()}`);
                 }
             }
         } else if (interaction.commandName === 'verbose') {

@@ -5,16 +5,13 @@ export class Commands {
     static async register(guild: Guild | null, lang?: string) {
         if (guild == null) return;
         lang = lang ?? "en";
-        await guild.commands.set([
-            {
+        await guild.commands.set([{
                 name: 'attach',
                 description: instructions.attach[lang]
-            },
-            {
+            }, {
                 name: 'detach',
                 description: instructions.detach[lang]
-            },
-            {
+            }, {
                 name: 'append',
                 description: instructions.append[lang],
                 options: [
@@ -25,7 +22,7 @@ export class Commands {
                         required: true
                     }
                 ]
-            },{
+            }, {
                 name: 'pause',
                 description: instructions.pause[lang]
             }, {
@@ -43,6 +40,9 @@ export class Commands {
             }, {
                 name: 'distinct',
                 description: instructions.distinct[lang]
+            }, {
+                name :'current',
+                description: instructions.current[lang]
             }, {
                 name: 'jump',
                 description: instructions.jump[lang],
