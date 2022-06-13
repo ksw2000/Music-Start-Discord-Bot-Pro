@@ -37,7 +37,7 @@ interface langMap {
  * Bucket.find(`id`) creates new instance if `id` is new one, else returns the instance we created.
  */
 export class Bucket {
-    private id: string;
+    public id: string;
     private connection: VoiceConnection | null = null;
     private interaction: CommandInteraction | Interaction | null = null;
     private voiceChannel: VoiceChannel | null = null;
@@ -50,17 +50,17 @@ export class Bucket {
     private _repeat: boolean = false;
     readonly queue: Queue = new Queue();
 
-    static load(){
+    static load() {
         var data = JSON.parse(fs.readFileSync('data.json', { encoding: 'utf-8', flag: 'r' }));
-        Object.keys(data).forEach((k: any)=>{
+        Object.keys(data).forEach((k: any) => {
             var e = data[k];
-            var bucket = new Bucket(e.id);
+            var bucket = new Bucket(k);
             bucket.lang = e.lang;
             bucket.volume = e.volume;
-            e.queue.forEach((f:any)=>{
+            e.queue.forEach((f: any) => {
                 bucket.queue.add(new MusicInfo(f.url, f.title, f.likes, f.viewCount, f.playCounter));
             });
-            Bucket.instant.set(k, bucket); 
+            Bucket.instant.set(k, bucket);
         });
     }
 
@@ -81,12 +81,15 @@ export class Bucket {
     static instant: Map<string, Bucket> = new Map();
 
     constructor(id: string) {
+        if (id == undefined) throw ('no guild id when fetch Bucket');
+        console.log('bucket id:', id);
         this.id = id;
         Bucket.instant.set(this.id, this);
     }
 
     static find(id: string): Bucket {
-        return Bucket.instant.get(id || "") || new Bucket(id);
+        // https://tutorial.eyehunts.com/js/javascript-double-question-mark-vs-double-pipe-code/
+        return Bucket.instant.get(id) ?? new Bucket(id);
     }
 
     get playing(): boolean {
@@ -232,7 +235,7 @@ export class Bucket {
         if (this.connection === null) {
             throw ((messages.robot_not_in_voice_channel as langMap)[this.lang]);
         }
-        
+
         // if the user not joined voice channel yet
         const stream = ytdl(music.url, {
             quality: 'highestaudio',
@@ -241,7 +244,7 @@ export class Bucket {
             begin: begin ? begin : 0,
             // begin: This option is not very reliable for non-live videos
         });
-        
+
         // ytdlInfo seems to be expired after a period of time
         // const stream = ytdl.downloadFromInfo(music.ytdlInfo, {...});
 
@@ -250,8 +253,8 @@ export class Bucket {
         // number - Total bytes or segments downloaded.
         // number - Total bytes or segments.
         // stream.on('progress', (chunkSize, downloadedSize, totalSize) => {
-            //     this._playerDownloadedChunk = downloadedSize;
-            //     this._playerTotalChunk = totalSize;
+        //     this._playerDownloadedChunk = downloadedSize;
+        //     this._playerTotalChunk = totalSize;
         // });
 
         this.resource = createAudioResource(stream, {
@@ -273,7 +276,7 @@ export class Bucket {
             this.interaction?.channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang], 'Try /attach again', true));
         }
     }
-    
+
     // play() + edit reply
     async playAndEditReplyDefault(music: MusicInfo, interaction: CommandInteraction | null) {
         this.play(music).then(() => {
