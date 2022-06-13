@@ -12,10 +12,6 @@ interface langMap {
     [key: string]: string;
 }
 
-interface QueueElement {
-    [key: string]: string;
-}
-
 export class Queue {
     private _list: Array<MusicInfo>;
     private _index: number;
