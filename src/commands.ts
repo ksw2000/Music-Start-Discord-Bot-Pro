@@ -142,6 +142,9 @@ export class Commands {
                 name: 'aqours',
                 description: instructions.aqours[lang]
             }, {
+                name: 'aqoursall',
+                description: instructions.aqoursall[lang]
+            }, {
                 name: 'azalea',
                 description: instructions.azalea[lang]
             }, {

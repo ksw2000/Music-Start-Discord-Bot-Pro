@@ -88,21 +88,25 @@
             "en": "Add Aqours' songs that author recommends into playlist.",
             "zh": "將作者精選的 Aqours 的歌單加入播放清單中"
         },
+        "aqoursall": {
+            "en": "Add all Aqours' songs into playlist. The list is provided by Benny",
+            "zh": "將 Aqours 的歌加入播放清單中。清單由 Benny 提供"
+        },
         "azalea": {
             "en": "Add AZALEA's songs that author recommends into playlist.",
             "zh": "將 AZALEA 的歌加入播放清單中"
         },
         "muse": {
             "en": "Add some μ's' songs into playlist. The list is provided by Benny",
-            "zh": "將 μ's 的歌單加入播放清單中。清單由 Benny 提供"
+            "zh": "將 μ's 的歌加入播放清單中。清單由 Benny 提供"
         },
         "liella": {
             "en": "Add some Liella's songs into playlist. The list is provided by Benny",
-            "zh": "將 Liella 的歌單加入播放清單中。清單由 Benny 提供"
+            "zh": "將 Liella 的歌加入播放清單中。清單由 Benny 提供"
         },
         "nijigasaki": {
             "en": "Add some Nijigasaki's songs into playlist. The list is provided by Benny",
-            "zh": "將虹團的歌單加入播放清單中。清單由 Benny 提供"
+            "zh": "將虹團的歌加入播放清單中。清單由 Benny 提供"
         },
         "lang": {
             "en": "Select language / 切換語言",
@@ -229,7 +233,7 @@
             "zh": "歡迎使用 Music Start Pro!"
         },
         "attach_fail": {
-            "en": "/attach file, Please enter any voice channel first.",
+            "en": "/attach fail, Please enter any voice channel first.",
             "zh": "/attach 失敗，Music Start Pro 無法加入語音頻道。請確定您已經進入語音頻道。"
         },
         "player_error": {

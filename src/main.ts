@@ -180,6 +180,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
                 bucket.player.stop();
             }
             bucket.queue.removeAll();
+            bucket.store();
             await interaction.reply((messages.playlist_is_reset as langMap)[bucket.lang]);
         } else if (interaction.commandName === 'sort') {
             if (bucket.queue.isEmpty()) {
@@ -267,6 +268,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
                 Util.sequentialEnQueueWithBatch(list, bucket.queue, downloadListener);
             }
         } else if (interaction.commandName === 'aqours' ||
+            interaction.commandName === 'aqoursall' ||
             interaction.commandName === 'azalea' ||
             interaction.commandName === 'muse' ||
             interaction.commandName === 'liella' ||
@@ -276,7 +278,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
 
             // done message 
             let done: string = "";
-            if (interaction.commandName === 'aqours') {
+            if (interaction.commandName === 'aqours' || interaction.commandName === 'aqoursall') {
                 done = 'Aqours sunshine!';
             } else if (interaction.commandName === 'azalea') {
                 done = "AZALEAです";
