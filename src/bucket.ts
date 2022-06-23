@@ -203,6 +203,9 @@ export class Bucket {
                 } else {
                     // real finish()
                     // update play counter
+                    // if call removeAll(), the current will out of bound.
+                    if(!this.queue.current) return;
+
                     this.queue.current.playCounter++;
                     this.store();
 
