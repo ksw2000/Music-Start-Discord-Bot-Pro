@@ -191,7 +191,7 @@ export class Bucket {
         // this block handles
         // (1) player error
         // (2) play next song when player finished
-        player.on<"stateChange">('stateChange', (oldState, newState) => {
+        player.on('stateChange', (oldState, newState) => {
             // onfinish()
             if (newState.status === AudioPlayerStatus.Idle && oldState.status !== AudioPlayerStatus.Idle) {
                 // If the Idle state is entered from a non-Idle state, it means that an audio resource has finished playing.
@@ -268,7 +268,7 @@ export class Bucket {
 
         try {
             this.player.play(this.resource);
-            await entersState(this.player, AudioPlayerStatus.Playing, 5e3);
+            await entersState(this.player, AudioPlayerStatus.Playing, 3e4);
         } catch (e) {
             this.interaction?.channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang], `${e}`, true));
             console.error("line274 bucket.ts play() error", e, "try to reset player");
