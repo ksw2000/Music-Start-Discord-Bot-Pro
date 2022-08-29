@@ -5,7 +5,7 @@ import { MusicInfo } from './musicInfo';
 import { Util } from './util';
 import { Bucket } from './bucket';
 import { Commands } from './commands';
-import 'process';
+
 
 import { messages } from './language.json';
 import *  as fs from 'fs';
@@ -302,9 +302,5 @@ export function main(token: string){
                 await interaction.reply("Command not found");
             }
         }
-    });
-
-    process.on('unhandledRejection', error => {
-        console.error('Unhandled promise rejection:', error);
     });
 }
