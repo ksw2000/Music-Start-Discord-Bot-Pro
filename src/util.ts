@@ -1,6 +1,6 @@
 import {
     MessageOptions,
-    MessageEmbed,
+    MessageEmbed
 } from 'discord.js';
 
 import { Queue } from './queue';

@@ -2,6 +2,7 @@ import { MusicInfo } from './musicInfo';
 import { messages } from './language.json';
 import {
     MessageButton,
+    MessageEditOptions,
     MessageOptions,
     MessageActionRow,
 } from 'discord.js';
@@ -170,7 +171,7 @@ export class Queue {
         return content + '\n```';
     }
 
-    showList(lang: string, page?: number | undefined): MessageOptions {
+    showList(lang: string, page?: number | undefined): MessageEditOptions | MessageOptions{
         page = page ?? Math.floor(this._index / entriesOfOnePage);
         const btnNext = new MessageButton()
             .setCustomId(`next-${page}`)

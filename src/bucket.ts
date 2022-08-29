@@ -271,12 +271,13 @@ export class Bucket {
             await entersState(this.player, AudioPlayerStatus.Playing, 5e3);
         } catch (e) {
             this.interaction?.channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang], `${e}`, true));
-            console.error("line237 bucket.ts play() error", e, "reset player");
+            console.error("line274 bucket.ts play() error", e, "try to reset player");
             this.player = this.createPlayer();
             if (this.interaction != null) {
-                this.connect(this.interaction);
+                this.connect(this.interaction as Interaction);
             }
-            this.interaction?.channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang], 'Try /attach again', true));
+            this.interaction?.channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang],
+                `${(messages.player_error as langMap)[this.lang]} ${Util.randomCry()}`, true));
         }
     }
 
