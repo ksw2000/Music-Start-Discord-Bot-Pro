@@ -4,12 +4,12 @@
 
 ![](https://i.imgur.com/I1cH4Uc.png)
 
-Music Start Pro is a discord bot that can play YouTube music. Besides, this version supports slash command.
+Music Start Pro is a discord bot that can play YouTube music by slash command.
 
 The older version without supporting slash command (Traditional Chinese): [Music Start](https://github.com/liao2000/Music-Start-Discord-Bot)
 
-+ [Click to invite bot to your guild.](https://discord.com/api/oauth2/authorize?client_id=889377515225886800&permissions=8&scope=bot%20applications.commands) Notice that this server is not stable.
-+ [Join Discord server.](https://discord.gg/qQM9avGy2R)
++ [Click to invite testing bot to your guild.](https://discord.com/api/oauth2/authorize?client_id=889377515225886800&permissions=8&scope=bot%20applications.commands) This server is not stable.
++ [Join our Discord test server.](https://discord.gg/qQM9avGy2R)
 
 ## Feature
 
@@ -66,45 +66,30 @@ The older version without supporting slash command (Traditional Chinese): [Music
 
 ```sh
 # initialize by npm
-npm install
+npm install -g
 
 # install ffmpeg
 npm i ffmpeg-static
 ```
 
-### STEP 2 Create Discord Application ID
+### STEP 2 Create Discord Application at Discord Developers
 
 https://discord.com/developers/docs/intro
 
-Create a new file at `src/token.js`.
 
-```js
-{
-    "token": "[Your-Discord-Bot-Token]",
-    "betaToken": "[(optional, for debug) Your-Another-Discord-Bot-Token]"
-}
-```
-
-### STEP 3 Run
+### STEP 3 Run in Terminal
 
 ```sh
-npm start
+# run
+ms -t [your-application-token]
 ```
 
-> If you develop your discord bot in Linux, you can run `./build.sh` to build environment. Besides, you can run `./deploy.sh` which kills previous running process and deploys the new one.
+### STEP 4 Join the Bot to Your Discord Guild
 
-### STEP 4 Add Bot to Your Guild.
+Notice that you should run `music start bot` server before joining the bot to the Discord guild.
 
 ```
 https://discord.com/api/oauth2/authorize?client_id=[YOUR-CLIENT-ID]&permissions=8&scope=bot%20applications.commands
-```
-
-### STEP 5 Debug
-
-If you have run the bot on one server, you can run another bot on local for testing.
-
-```sh
-npm run beta
 ```
 
 ### Pull Request
