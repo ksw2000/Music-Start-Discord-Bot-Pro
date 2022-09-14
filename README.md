@@ -65,11 +65,11 @@ The older version without supporting slash command (Traditional Chinese): [Music
 + npm: 8.4.1
 
 ```sh
-# initialize by npm
-npm install -g
+# initialize
+npm i
 
 # install ffmpeg
-npm i ffmpeg-static
+npm install ffmpeg-static
 ```
 
 ### STEP 2 Create Discord Application at Discord Developers
@@ -80,8 +80,9 @@ https://discord.com/developers/docs/intro
 ### STEP 3 Run in Terminal
 
 ```sh
-# run
-ms -t [your-application-token]
+npm run build
+npm install -g
+ms
 ```
 
 ### STEP 4 Join the Bot to Your Discord Guild
@@ -98,4 +99,4 @@ Before pull requesting, please use lint to format code.
 
 ```sh
 npm run lint
-``` 
+```
