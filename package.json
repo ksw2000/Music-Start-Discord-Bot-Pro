@@ -7,10 +7,11 @@
     "@types/node": "^16.4.13",
     "commander": "^9.4.0",
     "discord.js": "^13.10.1",
+    "ffmpeg-static": "^5.1.0",
     "opusscript": "^0.0.7",
     "tweetnacl": "^1.0.3",
     "typescript": "^4.3.5",
-    "ytdl-core": "^4.11.1"
+    "ytdl-core": "^4.11.2"
   },
   "bin": {
     "ms": "dist/cli.js"
