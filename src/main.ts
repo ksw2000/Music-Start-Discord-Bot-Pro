@@ -267,9 +267,9 @@ export function main(token: string){
                 // done message 
                 let done: string = "";
                 if (interaction.commandName === 'aqours' || interaction.commandName === 'llss') {
-                    done = 'Aqours sunshine!';
+                    done = 'Aqours SunShine!';
                 } else if (interaction.commandName === 'azalea') {
-                    done = "AZALEAです";
+                    done = "恋の喜び咲かせます、AZALEAです！ ";
                 } else if (interaction.commandName === 'muse') {
                     done = "μ's music start!";
                 } else if (interaction.commandName === 'liella') {
