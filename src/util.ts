@@ -15,7 +15,7 @@ export class Util {
     }
 
     static randomCry() {
-        const emojis = ['( ´•̥×•̥\`)', 'இдஇ', 'ヾ(;ﾟ;Д;ﾟ;)ﾉﾞ', '(☍﹏⁰)', '( ´•̥̥̥ω•̥̥̥` )', '༼ ༎ຶ ෴ ༎ຶ༽'];
+        const emojis = ['( ´•̥×•̥\`)', 'இдஇ', 'ヾ(;ﾟ;Д;ﾟ;)ﾉﾞ', '(☍﹏⁰)', '( ´•̥̥̥ω•̥̥̥` )', '(;´༎ຶД༎ຶ`)', '(☍﹏⁰。)', '(´;ω;`)'];
         return emojis[~~(Math.random() * emojis.length)];
     }
 
@@ -57,6 +57,10 @@ export class Util {
     }
 
     static sequentialEnQueueWithBatch(list: Array<string>, queue: Queue, listener?: EventEmitter, batch?: number) {
+        if (!Array.isArray(list) || list.length == 0) {
+            listener?.emit('error', 'The input JSON array should not be empty.')
+            return;
+        }
         let b = batch ?? 20;
         let done = 0;
         let fail = 0;
