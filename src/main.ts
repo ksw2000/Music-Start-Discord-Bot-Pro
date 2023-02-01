@@ -239,21 +239,23 @@ export function main(token: string){
                     let list: Array<string> = [];
                     try {
                         list = JSON.parse(interaction.options.get('json')!.value as string);
+                        const downloadListener = Util.sequentialEnqueueWithBatchListener();
+                        downloadListener.on('progress', (current, all) => {
+                            interaction.editReply('```yaml\n' + Util.progressBar(current, all, progressBarLen) + '\n```');
+                        });
+                        downloadListener.once('done', (all, fail) => {
+                            downloadListener.removeAllListeners()
+                            interaction.editReply('```yaml\n' + Util.progressBar(all, all, progressBarLen) + ' ✅\n```' + `success: ${all - fail} / fail: ${fail}`);
+                        });
+                        downloadListener.once('error', (e) => {
+                            downloadListener.removeAllListeners()
+                            interaction.editReply(Util.createEmbedMessage('Error sequentialEnQueueWithBatch()', `${Util.randomCry()}\n${e}`, true));
+                        });
+                        Util.sequentialEnQueueWithBatch(list, bucket.queue, downloadListener);
                     } catch (e) {
-                        await interaction.editReply(Util.createEmbedMessage('Error', `${e}`, true));
+                        await interaction.editReply(Util.createEmbedMessage('Error JSON.parse()', `${Util.randomCry()}\n${e}`, true));
                         return;
                     }
-                    const downloadListener = Util.sequentialEnqueueWithBatchListener();
-                    downloadListener.on('progress', (current, all) => {
-                        interaction.editReply('```yaml\n' + Util.progressBar(current, all, progressBarLen) + '\n```');
-                    });
-                    downloadListener.once('done', (all, fail) => {
-                        interaction.editReply('```yaml\n' + Util.progressBar(all, all, progressBarLen) + ' ✅\n```' + `success: ${all - fail} / fail: ${fail}`);
-                    });
-                    downloadListener.once('error', (e) => {
-                        interaction.editReply(`${Util.randomCry()}\n${e}`);
-                    });
-                    Util.sequentialEnQueueWithBatch(list, bucket.queue, downloadListener);
                 }
             } else if (interaction.commandName === 'aqours' ||
                 interaction.commandName === 'llss' ||
@@ -287,7 +289,7 @@ export function main(token: string){
                     interaction.editReply('```yaml\n' + Util.progressBar(all, all, 35) + ' ✅\n```' + `${done}`);
                 });
                 downloadListener.once('error', (e) => {
-                    interaction.editReply(`${Util.randomCry()}\n${e}`);
+                    interaction.editReply(Util.createEmbedMessage('Error', `${Util.randomCry()}\n${e}`, true));
                 });
                 Util.sequentialEnQueueWithBatch(list, bucket.queue, downloadListener);
             } else if (interaction.commandName === 'lang') {
