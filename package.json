@@ -1,7 +1,19 @@
 {
   "name": "music-start-pro",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Music Start Pro is a discord bot that can play YouTube music by slash command.",
+  "keywords": [
+    "discord",
+    "YouTube",
+    "bot",
+    "music",
+    "ytdl"
+  ],
+  "homepage": "https://github.com/ksw2000/Music-Start-Discord-Bot-Pro.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ksw2000/Music-Start-Discord-Bot-Pro.git"
+  },
   "dependencies": {
     "@discordjs/voice": "^0.11.0",
     "@types/node": "^16.4.13",

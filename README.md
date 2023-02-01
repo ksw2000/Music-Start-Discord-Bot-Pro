@@ -1,6 +1,6 @@
 # Music Start Pro
 
-![](https://img.shields.io/github/license/liao2000/Music-Start-Discord-Bot-Pro?style=flat-square) ![](https://img.shields.io/github/stars/liao2000/Music-Start-Discord-Bot-Pro?style=flat-square) ![](https://img.shields.io/github/issues/liao2000/Music-Start-Discord-Bot-Pro?color=yellow&style=flat-square) [![](https://img.shields.io/discord/864220336841162756?style=flat-square)](https://discord.gg/qQM9avGy2R)
+[![NPM version](https://img.shields.io/npm/v/music-start-pro.svg?logo=npm&style=flat-square)](https://www.npmjs.org/package/music-start-pro) ![](https://img.shields.io/github/license/ksw2000/Music-Start-Discord-Bot-Pro?style=flat-square) ![](https://img.shields.io/github/stars/ksw2000/Music-Start-Discord-Bot-Pro?style=flat-square) ![](https://img.shields.io/github/issues/ksw2000/Music-Start-Discord-Bot-Pro?color=yellow&style=flat-square) [![](https://img.shields.io/discord/864220336841162756?style=flat-square)](https://discord.gg/qQM9avGy2R) ![](https://img.shields.io/npm/dt/music-start-pro?color=blue&style=flat-square)
 
 ![](https://i.imgur.com/I1cH4Uc.png)
 
