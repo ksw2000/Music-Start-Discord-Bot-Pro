@@ -18,7 +18,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "tsc & npm install -g & ms",
+    "test": "tsc & npx ms",
     "lint": "eslint src/**"
   },
   "author": "Kashiwa",
@@ -27,8 +27,8 @@
     "node": ">=17.0"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.27.0",
-    "@typescript-eslint/parser": "^5.27.0",
-    "eslint": "^8.17.0"
+    "@typescript-eslint/eslint-plugin": "^5.50.0",
+    "@typescript-eslint/parser": "^5.50.0",
+    "eslint": "^8.33.0"
   }
 }
