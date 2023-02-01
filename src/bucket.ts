@@ -49,9 +49,18 @@ export class Bucket {
     private _lang: string = "en";
     private _repeat: boolean = false;
     readonly queue: Queue = new Queue();
+    private static _useLog: boolean = true;
+    private static _logFn: string = '';
+    static disableLog(){
+        Bucket._useLog = false;
+    }
 
-    static load() {
-        var data = JSON.parse(fs.readFileSync('data.json', { encoding: 'utf-8', flag: 'r' }));
+    static load(fn:string) {
+        // Even if the file does not exist, set _logFn nonetheless.
+        Bucket._logFn = fn;
+        // if the file does not exist, exit
+        if (!fs.existsSync(fn)) return;
+        var data = JSON.parse(fs.readFileSync(fn, { encoding: 'utf-8', flag: 'r' }));
         Object.keys(data).forEach((k: any) => {
             var e = data[k];
             var bucket = new Bucket(k);
@@ -64,8 +73,9 @@ export class Bucket {
         });
     }
 
-    // store all instance of Bucket
+    // store all instance of Bucket when _useLog is true
     store() {
+        if (!Bucket._useLog) return;
         var ret: any = {};
         Bucket.instant.forEach((e: Bucket) => {
             ret[e.id] = {
@@ -75,7 +85,7 @@ export class Bucket {
             }
         });
 
-        fs.writeFileSync('data.json', JSON.stringify(ret), { flag: 'w' });
+        fs.writeFileSync(Bucket._logFn, JSON.stringify(ret), { flag: 'w' });
     }
 
     static instant: Map<string, Bucket> = new Map();

@@ -5,19 +5,23 @@ import { MusicInfo } from './musicInfo';
 import { Util } from './util';
 import { Bucket } from './bucket';
 import { Commands } from './commands';
-
-
 import { messages } from './language.json';
-import *  as fs from 'fs';
 
 interface langMap {
     [key: string]: string;
 }
 
-export function main(token: string){
+const logFile = 'data.json'
+
+export function main(token: string, useLog: boolean){
     // load buckets
-    if (fs.existsSync('data.json')) {
-        Bucket.load();
+    if(useLog){
+        console.log("The log file will be read/written at:", logFile)
+        console.log("You can disable log file by -d or --disable-log")
+        Bucket.load(logFile);
+    }else{
+        console.log("Log file: disable")
+        Bucket.disableLog()
     }
 
     const progressBarLen = 35;

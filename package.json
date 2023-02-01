@@ -18,7 +18,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "tsc & npx ms",
+    "test": "tsc & npx ms -d",
     "lint": "eslint src/**"
   },
   "author": "Kashiwa",

@@ -6,11 +6,18 @@ import 'process';
 commander.program.version('0.0.4', '-v, --version', 'output the current version');
 commander.program
     .addOption(new commander.Option('-t, --token <discord_bot_token>', 'specify the discord bot token').default(''))
+    .addOption(new commander.Option('-d, --disable-log', 'do not save and load the log file'))
     .parse(process.argv);
 
 const options = commander.program.opts();
 
 let token: string = options.token;
+let optDisableLog = options.disableLog;
+let useLog: boolean = true;
+
+if (optDisableLog) {
+    useLog = false
+}
 
 if(token == ""){
     process.stdout.write("please input token: ");
@@ -19,13 +26,12 @@ if(token == ""){
         const input = process.stdin.read();
         if (input !== null) {
             token = input.trim();
-            main(token);
+            main(token, useLog);
         }
     });
 }else{
-    main(token);
+    main(token, useLog);
 }
-
 
 process.on('unhandledRejection', error => {
     console.error('Unhandled promise rejection:', error);
