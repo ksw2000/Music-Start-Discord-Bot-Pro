@@ -6,9 +6,9 @@
 
 Music Start Pro is a discord bot that can play YouTube music by slash command.
 
-The older version without supporting slash command (Traditional Chinese): [Music Start](https://github.com/liao2000/Music-Start-Discord-Bot)
+The older version without supporting slash command (Traditional Chinese): [Music Start](https://github.com/ksw2000/Music-Start-Discord-Bot)
 
-+ [Click to invite testing bot to your guild.](https://discord.com/api/oauth2/authorize?client_id=889377515225886800&permissions=8&scope=bot%20applications.commands) This server is not stable.
++ [Click to invite testing bot to your guild.](https://discord.com/api/oauth2/authorize?client_id=889377515225886800&permissions=8&scope=bot%20applications.commands) This server cannot guarantee availability at all times.
 + [Join our Discord test server.](https://discord.gg/qQM9avGy2R)
 
 ## Feature
@@ -80,9 +80,20 @@ https://discord.com/developers/docs/intro
 ### STEP 3 Run in Terminal
 
 ```sh
+# build from source code
 npm run build
+# install the program
 npm install -g
+# run the program
 ms
+# you can give token directly
+ms --token [bot-token]
+```
+
+You can directly test the code without building and installation: (execution by `npx`)
+
+```sh
+npm run test
 ```
 
 ### STEP 4 Join the Bot to Your Discord Guild
@@ -95,7 +106,7 @@ https://discord.com/api/oauth2/authorize?client_id=[YOUR-CLIENT-ID]&permissions=
 
 ### Pull Request
 
-Before pull requesting, please use lint to format code.
+Before making a pull request, please use lint.
 
 ```sh
 npm run lint
