@@ -1,0 +1,6 @@
+.github/
+.gitattributes
+node_modules/
+_*
+data.json
+dist/

@@ -55,7 +55,7 @@ The older version without supporting slash command (Traditional Chinese): [Music
     + The second song 1 = 17
     + The last song 15 = 31 = -1 
 
-![](https://i.imgur.com/5B3tNMQ.png)
+![](https://i.imgur.com/lkvXj34.png)
 
 ## Develop
 
