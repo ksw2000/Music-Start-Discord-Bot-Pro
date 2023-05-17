@@ -157,6 +157,12 @@ export class Commands {
             name: 'nijigasaki',
             description: instructions.nijigasaki[lang]
         }, {
+            name: 'q4',
+            description: instructions.q4[lang]
+        }, {
+            name: 'hasunosora',
+            description: instructions.hasunosora[lang]
+        }, {
             name: 'lang',
             description: instructions.lang[lang],
             options: [

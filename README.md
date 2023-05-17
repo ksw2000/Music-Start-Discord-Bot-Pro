@@ -70,17 +70,19 @@ https://discord.com/api/oauth2/authorize?client_id=[YOUR-CLIENT-ID]&permissions=
   + `/pre` Play the previous song.
   + `/next` Play the next song.
   + `/vol` Show the volume.
-  + `/vol [number]` Set the volume, where number is in [0, 1]
+  + `/vol [number]` Set the volume, where number is in [0, 1].
   + `/pause`, `/resume`, `/stop`
 + Batch Operation
-  + `/json` Output the playlist by json format
-  + `/json [json-string]` Add a batch of songs by given a json string
-  + `/aqours` Append Aqours' songs that author recommends into playlist.
-  + `/llss ` Add all the songs about LoveLive Sunshine into playlist. The list is provided by Benny.
+  + `/json` Output the playlist by json format.
+  + `/json [json-string]` Add a batch of songs by given a json string.
+  + `/aqours` Add Aqours' songs that author recommends into playlist.
+  + `/llss ` Add the songs about LoveLive Sunshine into playlist. The list is provided by Benny.
   + `/azalea` Add AZALEA's songs that author recommends into playlist.
-  + `/muse` Append some μ's' songs into playlist.
-  + `/nijigasaki` Append some 虹ヶ咲's songs into playlist.
-  + `/liella` Append some Liella' songs into playlist.
+  + `/muse` Add some μ's' songs into playlist. The list is provided by Benny.
+  + `/nijigasaki` Add some Nijigasaki's songs into playlist. The list is provided by Benny.
+  + `/q4` Add QU4RTZ's songs into playlist.
+  + `/liella` Add some Liella's songs into playlist. The list is provided by Benny.
+  + `/hasunosora` Add Hasu No Sora's songs into playlist. The list is provided by Benny.
 + General index number
   + The index is start at 0
   + Negative number -1 stands for the last song

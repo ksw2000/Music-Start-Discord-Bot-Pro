@@ -274,7 +274,9 @@ export function main(token: string, useLog: boolean) {
                 interaction.commandName === 'azalea' ||
                 interaction.commandName === 'muse' ||
                 interaction.commandName === 'liella' ||
-                interaction.commandName === 'nijigasaki') {
+                interaction.commandName === 'nijigasaki' ||
+                interaction.commandName === 'q4' ||
+                interaction.commandName === 'hasunosora') {
                 // fetch recommend music list
                 let list = require('../recommend/' + interaction.commandName + '.json').list;
 

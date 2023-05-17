@@ -89,7 +89,7 @@
             "zh": "將作者精選的 Aqours 的歌單加入播放清單中"
         },
         "llss": {
-            "en": "Add all the songs about LoveLive Sunshine into playlist. The list is provided by Benny",
+            "en": "Add the songs about LoveLive Sunshine into playlist. The list is provided by Benny.",
             "zh": "將 LoveLive Sunshine 相關歌曲加入播放清單中。清單由 Benny 提供"
         },
         "azalea": {
@@ -97,16 +97,24 @@
             "zh": "將作者精選的 AZALEA 的歌加入播放清單中"
         },
         "muse": {
-            "en": "Add some μ's' songs into playlist. The list is provided by Benny",
+            "en": "Add some μ's' songs into playlist. The list is provided by Benny.",
             "zh": "將 μ's 的歌加入播放清單中。清單由 Benny 提供"
         },
+        "nijigasaki": {
+            "en": "Add some Nijigasaki's songs into playlist. The list is provided by Benny.",
+            "zh": "將虹團的歌加入播放清單中。清單由 Benny 提供"
+        },
         "liella": {
-            "en": "Add some Liella's songs into playlist. The list is provided by Benny",
+            "en": "Add some Liella's songs into playlist. The list is provided by Benny.",
             "zh": "將 Liella 的歌加入播放清單中。清單由 Benny 提供"
         },
-        "nijigasaki": {
-            "en": "Add some Nijigasaki's songs into playlist. The list is provided by Benny",
-            "zh": "將虹團的歌加入播放清單中。清單由 Benny 提供"
+        "q4":{
+            "en": "Add QU4RTZ's songs into playlist.",
+            "zh": "將 QU4RTZ 的歌加入播放清單中。"
+        },
+        "hasunosora": {
+            "en": "Add Hasu No Sora's songs into playlist. The list is provided by Benny.",
+            "zh": "將蓮團的歌加入播放清單中。清單由 Benny 提供"
         },
         "lang": {
             "en": "Select language / 切換語言",
