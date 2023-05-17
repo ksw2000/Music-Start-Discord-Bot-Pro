@@ -1,4 +1,12 @@
-import { Client, Intents, Interaction, Guild, MessagePayload, MessageEditOptions, MessageOptions, Message } from 'discord.js';
+import {
+    Client,
+    GatewayIntentBits,
+    Interaction,
+    Guild,
+    MessagePayload,
+    MessageEditOptions,
+    Options
+} from 'discord.js';
 
 import ytdl from 'ytdl-core';
 import { MusicInfo } from './musicInfo';
@@ -13,20 +21,20 @@ interface langMap {
 
 const logFile = 'data.json'
 
-export function main(token: string, useLog: boolean){
+export function main(token: string, useLog: boolean) {
     // load buckets
-    if(useLog){
+    if (useLog) {
         console.log("The log file will be read/written at:", logFile)
         console.log("You can disable log file by -d or --disable-log")
         Bucket.load(logFile);
-    }else{
+    } else {
         console.log("Log file: disable")
         Bucket.disableLog()
     }
 
     const progressBarLen = 35;
     const client: Client = new Client({
-        intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES]
+        intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildVoiceStates]
     });
 
     client.login(token);
@@ -126,7 +134,7 @@ export function main(token: string, useLog: boolean){
                     // remove duplicate songs and show list
                     bucket.queue.removeDuplicate();
                 }
-                await interaction.reply(new MessagePayload(interaction, bucket.queue.showList(bucket.lang) as MessageOptions));
+                await interaction.reply(new MessagePayload(interaction, bucket.queue.showList(bucket.lang) as Options));
             } else if (interaction.commandName === 'current') {
                 var description: string = `Volume: ${bucket.volume}\n`;
                 description += `Is playing: ${bucket.playing ? "yes" : "no"}\n`;

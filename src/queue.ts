@@ -1,10 +1,11 @@
 import { MusicInfo } from './musicInfo';
 import { messages } from './language.json';
 import {
-    MessageButton,
+    ButtonBuilder,
+    ButtonStyle,
     MessageEditOptions,
-    MessageOptions,
-    MessageActionRow,
+    Options,
+    ActionRowBuilder,
 } from 'discord.js';
 
 const entriesOfOnePage = 30;
@@ -171,24 +172,24 @@ export class Queue {
         return content + '\n```';
     }
 
-    showList(lang: string, page?: number | undefined): MessageEditOptions | MessageOptions{
+    showList(lang: string, page?: number | undefined): MessageEditOptions | Options {
         page = page ?? Math.floor(this._index / entriesOfOnePage);
-        const btnNext = new MessageButton()
+        const btnNext = new ButtonBuilder()
             .setCustomId(`next-${page}`)
             .setLabel('Next')
-            .setStyle('SECONDARY')
-        const btnPre = new MessageButton()
+            .setStyle(ButtonStyle.Secondary)
+        const btnPre = new ButtonBuilder()
             .setCustomId(`previous-${page}`)
             .setLabel('Previous')
-            .setStyle('SECONDARY')
-        const btnRefresh = new MessageButton()
+            .setStyle(ButtonStyle.Secondary)
+        const btnRefresh = new ButtonBuilder()
             .setCustomId('refresh')
             .setLabel('Refresh')
-            .setStyle('SECONDARY')
+            .setStyle(ButtonStyle.Secondary)
 
         return {
             content: this.showListByPage(lang, page),
-            components: [new MessageActionRow()
+            components: [new ActionRowBuilder()
                 .addComponents(btnPre)
                 .addComponents(btnRefresh)
                 .addComponents(btnNext)
@@ -198,7 +199,7 @@ export class Queue {
 
     toList(): any[] {
         var ret: any[] = [];
-        this._list.forEach((music)=>{
+        this._list.forEach((music) => {
             ret.push({
                 url: music.url,
                 title: music.title,

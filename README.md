@@ -4,14 +4,46 @@
 
 ![](https://i.imgur.com/I1cH4Uc.png)
 
+## Overview
+
 Music Start Pro is a discord bot that can play YouTube music by slash command.
 
-The older version without supporting slash command (Traditional Chinese): [Music Start](https://github.com/ksw2000/Music-Start-Discord-Bot)
+```sh
+# Install
+npm install -g music-start-pro
 
-+ [Click to invite testing bot to your guild.](https://discord.com/api/oauth2/authorize?client_id=889377515225886800&permissions=8&scope=bot%20applications.commands) This server cannot guarantee availability at all times.
-+ [Join our Discord test server.](https://discord.gg/qQM9avGy2R)
+# Start music-start-pro
+ms --token [YOUR-DISCORD-BOT-TOKEN]
 
-## Feature
+# See help
+ms --help
+Usage: ms [options]
+
+Options:
+  -v, --version                    output the current version
+  -t, --token <discord_bot_token>  specify the discord bot token (default: "")
+  -d, --disable-log                do not save and load the log file
+  -h, --help                       display help for command
+```
+
+Get token on [Discord Developer Portal](https://discord.com/developers/applications)
+
+Add the bot to your Discord server by visiting
+
+```
+https://discord.com/api/oauth2/authorize?client_id=[YOUR-CLIENT-ID]&permissions=8&scope=bot%20applications.commands
+```
+
+> **Notice** 
+>
+> You must run `music start bot` server before joining the bot to the Discord guild.
+
+---
+
++ [Click here to invite testing bot to your guild.](https://discord.com/api/oauth2/authorize?client_id=889377515225886800&permissions=8&scope=bot%20applications.commands) The availability of the server is not guaranteed.
++ [Join our Discord server.](https://discord.gg/qQM9avGy2R)
+
+## Features
 
 + `/attach` 
   + Attach MS Pro to the voice channel where you are. Thus, you must join in the voice cannel first.
@@ -44,6 +76,8 @@ The older version without supporting slash command (Traditional Chinese): [Music
   + `/json` Output the playlist by json format
   + `/json [json-string]` Add a batch of songs by given a json string
   + `/aqours` Append Aqours' songs that author recommends into playlist.
+  + `/llss ` Add all the songs about LoveLive Sunshine into playlist. The list is provided by Benny.
+  + `/azalea` Add AZALEA's songs that author recommends into playlist.
   + `/muse` Append some μ's' songs into playlist.
   + `/nijigasaki` Append some 虹ヶ咲's songs into playlist.
   + `/liella` Append some Liella' songs into playlist.
@@ -59,55 +93,16 @@ The older version without supporting slash command (Traditional Chinese): [Music
 
 ## Develop
 
-### STEP 1 Set Environment
-
-+ node: 17.5.0
-+ npm: 8.4.1
-
 ```sh
+# clone the repository
+git clone https://github.com/ksw2000/Music-Start-Discord-Bot-Pro
+
 # initialize
 npm i
 
-# install ffmpeg
-npm install ffmpeg-static
-```
+# start the program by
+npm run start
 
-### STEP 2 Create Discord Application at Discord Developers
-
-https://discord.com/developers/docs/intro
-
-
-### STEP 3 Run in Terminal
-
-```sh
-# build from source code
-npm run build
-# install the program
-npm install -g
-# run the program
-ms
-# you can give token directly
-ms --token [bot-token]
-```
-
-You can directly test the code without building and installation: (execution by `npx`)
-
-```sh
-npm run test
-```
-
-### STEP 4 Join the Bot to Your Discord Guild
-
-Notice that you should run `music start bot` server before joining the bot to the Discord guild.
-
-```
-https://discord.com/api/oauth2/authorize?client_id=[YOUR-CLIENT-ID]&permissions=8&scope=bot%20applications.commands
-```
-
-### Pull Request
-
-Before making a pull request, please use lint.
-
-```sh
+# please use lint before making a pull request
 npm run lint
 ```

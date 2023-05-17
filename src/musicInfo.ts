@@ -1,4 +1,4 @@
-import ytdl from 'ytdl-core';
+import ytdl from 'ytdl-core'
 
 export class MusicInfo {
     url: string;

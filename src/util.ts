@@ -1,6 +1,6 @@
 import {
-    MessageOptions,
-    MessageEmbed
+    Options,
+    EmbedBuilder
 } from 'discord.js';
 
 import { Queue } from './queue';
@@ -28,16 +28,16 @@ export class Util {
         }
     }
 
-    static createEmbedMessage(title: string, description: string, isErrorMessage?: boolean): MessageOptions {
+    static createEmbedMessage(title: string, description: string, isErrorMessage?: boolean): Options {
         return {
-            embeds: [new MessageEmbed()
+            embeds: [new EmbedBuilder()
                 .setTitle(title)
                 .setColor((isErrorMessage === true) ? 0xf54242 : 0x33DFFF)
                 .setDescription(description)]
         };
     }
 
-    static createMusicInfoMessage(info: MusicInfo): MessageOptions {
+    static createMusicInfoMessage(info: MusicInfo): Options {
         let description = `From youtube: ${info.url}\n\n`;
         if (info.viewCount != -1) {
             description += `:eyes:　${Util.humanReadNum(info.viewCount)}`;

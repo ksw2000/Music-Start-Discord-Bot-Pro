@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import commander from 'commander';
-import {main} from './main';
+import { main } from './main';
 import 'process';
 
-commander.program.version('0.0.2', '-v, --version', 'output the current version');
+commander.program.version('0.0.3', '-v, --version', 'output the current version');
 commander.program
     .addOption(new commander.Option('-t, --token <discord_bot_token>', 'specify the discord bot token').default(''))
     .addOption(new commander.Option('-d, --disable-log', 'do not save and load the log file'))
@@ -19,7 +19,7 @@ if (optDisableLog) {
     useLog = false
 }
 
-if(token == ""){
+if (token == "") {
     process.stdout.write("please input token: ");
     process.stdin.setEncoding('utf-8');
     process.stdin.on('readable', () => {
@@ -29,7 +29,7 @@ if(token == ""){
             main(token, useLog);
         }
     });
-}else{
+} else {
     main(token, useLog);
 }
 

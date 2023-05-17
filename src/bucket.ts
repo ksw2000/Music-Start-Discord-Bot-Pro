@@ -51,11 +51,11 @@ export class Bucket {
     readonly queue: Queue = new Queue();
     private static _useLog: boolean = true;
     private static _logFn: string = '';
-    static disableLog(){
+    static disableLog() {
         Bucket._useLog = false;
     }
 
-    static load(fn:string) {
+    static load(fn: string) {
         // Even if the file does not exist, set _logFn nonetheless.
         Bucket._logFn = fn;
         // if the file does not exist, exit
@@ -214,7 +214,7 @@ export class Bucket {
                     // real finish()
                     // update play counter
                     // if call removeAll(), the current will out of bound.
-                    if(!this.queue.current) return;
+                    if (!this.queue.current) return;
 
                     this.queue.current.playCounter++;
                     this.store();
