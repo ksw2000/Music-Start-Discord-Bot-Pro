@@ -178,7 +178,8 @@ export class Queue {
     private showListByPage(lang: string, page: number, isShowSearchList: boolean = false): string {
         let content = '```yaml\n';
         const pages = isShowSearchList ? Math.ceil(this._searchResult.length / entriesOfOnePage) : this.pages;
-        content += `page:\t${page}/${Math.max(pages, 1) - 1}\n`;
+        // when showing the current page, increasing one for the number of current page.
+        content += `page:\t${page + 1}/${Math.max(pages, 1)}\n`;
         if (this.isEmpty() || (isShowSearchList && this._searchResult.length === 0)) {
             content += (messages.playlist_is_empty as langMap)[lang];
         }
