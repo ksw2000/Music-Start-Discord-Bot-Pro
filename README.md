@@ -26,7 +26,7 @@ Options:
   -h, --help                       display help for command
 ```
 
-Get token on [Discord Developer Portal](https://discord.com/developers/applications)
+Get a token on [Discord Developer Portal](https://discord.com/developers/applications)
 
 Add the bot to your Discord server by visiting
 
@@ -40,58 +40,60 @@ https://discord.com/api/oauth2/authorize?client_id=[YOUR-CLIENT-ID]&permissions=
 
 ---
 
-+ [Click here to invite testing bot to your guild.](https://discord.com/api/oauth2/authorize?client_id=889377515225886800&permissions=8&scope=bot%20applications.commands) The availability of the server is not guaranteed.
++ [Click here to invite the testing bot to your guild.](https://discord.com/api/oauth2/authorize?client_id=889377515225886800&permissions=8&scope=bot%20applications.commands) The availability of the server is not guaranteed.
 + [Join our Discord server.](https://discord.gg/qQM9avGy2R)
 
 ## Features
 
 + `/attach` 
-  + Attach MS Pro to the voice channel where you are. Thus, you must join in the voice cannel first.
-  + At the same time, the command fetch the new instructions set if updated.
+  + Attach MS Pro to the voice channel where you are. Thus, you must join the voice channel first.
+  + At the same time, the command fetches the new instructions set if updated.
   + You can detach the MS Pro by `/detach`.
-  + If you move the MS Pro to another voice channel, please type `/attach` again after move.
+  + If you move the MS Pro to another voice channel, please `/attach` again after moving.
 + `/append [youtube-url]`
-  + Append the song into the playlist by given YouTube URL.
-  + You can just input the video id. That is, if you want to play `https://www.youtube.com/watch?v=Qj0Dmwxv-KY`, you can just `/append Qj0Dmwxv-KY`
+  + Append the song to the playlist by the given YouTube URL.
+  + You can just input the video ID. That is, if you want to play `https://www.youtube.com/watch?v=Qj0Dmwxv-KY`, you can use `/append Qj0Dmwxv-KY` instead.
 + `/lang [code]`
   + Now support `en` and `zh`
   + en: English
   + zh: Traditional Chinese
 + Playlist
   + `/list` Show the playlist.
-  + `/swap [idx1] [idx2]`Swap 2 song by index number.
-  + `/remove [idx]`Remove song by index number.
+  + `/swap [idx1] [idx2]`Swap 2 songs by index number.
+  + `/remove [idx]`Remove the song by index number.
   + `/clear` Remove all songs.
   + `/sort` Sort the playlist in alphabetical order. 
   + `/shuffle` Shuffle the playlist.
+  + `/search [regexp]` Search the songs in the playlist.
   + `/distinct` Remove duplicate songs.
 + Player control
   + `/jump [idx]` Jump to a song in the playlist by given index.
   + `/pre` Play the previous song.
   + `/next` Play the next song.
   + `/vol` Show the volume.
-  + `/vol [number]` Set the volume, where number is in [0, 1].
+  + `/vol [number]` Set the volume, where the number is in [0, 1].
   + `/pause`, `/resume`, `/stop`
 + Batch Operation
-  + `/json` Output the playlist by json format.
-  + `/json [json-string]` Add a batch of songs by given a json string.
-  + `/aqours` Add Aqours' songs that author recommends into playlist.
-  + `/llss ` Add the songs about LoveLive Sunshine into playlist. The list is provided by Benny.
-  + `/azalea` Add AZALEA's songs that author recommends into playlist.
-  + `/muse` Add some μ's' songs into playlist. The list is provided by Benny.
-  + `/nijigasaki` Add some Nijigasaki's songs into playlist. The list is provided by Benny.
-  + `/q4` Add QU4RTZ's songs into playlist.
-  + `/liella` Add some Liella's songs into playlist. The list is provided by Benny.
-  + `/hasunosora` Add Hasu No Sora's songs into playlist. The list is provided by Benny.
+  + `/json` Output the playlist by JSON format.
+  + `/json [json-string]` Add a batch of songs by giving a JSON string.
+  + `/aqours` Add **Aqours**' songs that author recommends into playlist.
+  + `/llss ` Add the songs about **LoveLive Sunshine** into playlist. The list is provided by Benny.
+  + `/azalea` Add **AZALEA**'s songs that author recommends into playlist.
+  + `/muse` Add some **μ's**' songs into playlist. The list is provided by Benny.
+  + `/nijigasaki` Add some **Nijigasaki**'s songs into playlist. The list is provided by Benny.
+  + `/q4` Add **QU4RTZ**'s songs into playlist.
+  + `/liella` Add some **Liella**'s songs into playlist. The list is provided by Benny.
+  + `/hasunosora` Add **Hasu No Sora**'s songs into playlist. The list is provided by Benny.
+  + `/genjitsu` Add the songs about **Yohane the Parhelion** into playlist. The list is provided by Benny.
 + General index number
-  + The index is start at 0
+  + The index starts at 0, and can be the modulus of the total number of songs.
   + Negative number -1 stands for the last song
   + Support overflow, e.g., we have 16 songs
-    + The first song 0 = 16
-    + The second song 1 = 17
-    + The last song 15 = 31 = -1 
+    + The first song 0 = 16 (mod 16)
+    + The second song 1 = 17 (mod 16)
+    + The last song 15 = 31 = -1 (mod 16)
 
-![](https://i.imgur.com/lkvXj34.png)
+![preview](https://imgur.com/06iPlN4.png)
 
 ## Develop
 
@@ -102,9 +104,9 @@ git clone https://github.com/ksw2000/Music-Start-Discord-Bot-Pro
 # initialize
 npm i
 
-# start the program by
+# You can start the program by
 npm run start
 
-# please use lint before making a pull request
+# Please use lint before making a pull request
 npm run lint
 ```

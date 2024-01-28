@@ -3,7 +3,7 @@ import commander from 'commander';
 import { main } from './main';
 import 'process';
 
-commander.program.version('1.0.0', '-v, --version', 'output the current version');
+commander.program.version('1.1.0', '-v, --version', 'output the current version');
 commander.program
     .addOption(new commander.Option('-t, --token <discord_bot_token>', 'specify the discord bot token').default(''))
     .addOption(new commander.Option('-d, --disable-log', 'do not save and load the log file'))
