@@ -16,7 +16,7 @@ let optDisableLog = options.disableLog;
 let useLog: boolean = true;
 
 if (optDisableLog) {
-    useLog = false
+    useLog = false;
 }
 
 if (token == "") {

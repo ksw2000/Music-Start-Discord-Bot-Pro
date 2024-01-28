@@ -6,4 +6,7 @@ parserOptions:
   ecmaVersion: latest
 plugins:
   - '@typescript-eslint'
-rules: {}
+rules: {
+  "semi": "off",
+  "@typescript-eslint/semi": ["error"],
+}

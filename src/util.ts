@@ -28,6 +28,7 @@ export class Util {
         }
     }
 
+    // @param `title` should not be empty string ""
     static createEmbedMessage(title: string, description: string, isErrorMessage?: boolean): Options {
         return {
             embeds: [new EmbedBuilder()
@@ -58,7 +59,7 @@ export class Util {
 
     static sequentialEnQueueWithBatch(list: Array<string>, queue: Queue, listener?: EventEmitter, batch?: number) {
         if (!Array.isArray(list) || list.length == 0) {
-            listener?.emit('error', 'The input JSON array should not be empty.')
+            listener?.emit('error', 'The input JSON array should not be empty.');
             return;
         }
         let b = batch ?? 20;

@@ -82,7 +82,7 @@ export class Bucket {
                 lang: this.lang,
                 volume: this.volume,
                 queue: this.queue.toList()
-            }
+            };
         });
 
         fs.writeFileSync(Bucket._logFn, JSON.stringify(ret), { flag: 'w' });
