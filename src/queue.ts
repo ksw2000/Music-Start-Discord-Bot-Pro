@@ -17,10 +17,14 @@ interface langMap {
 export class Queue {
     private _list: Array<MusicInfo>;
     private _index: number;
+    private _searchResult: Array<number>;
+    private _searchQuery: RegExp | null;
 
     constructor() {
         this._list = [];
+        this._searchResult = [];
         this._index = 0;
+        this._searchQuery = null;
     }
 
     get list(): Array<MusicInfo> {
@@ -77,7 +81,7 @@ export class Queue {
     }
 
     // @param index can be any integer.
-    // @return true if success vice versa.
+    // @return true if success, vice versa.
     remove(index: number, isNowPlaying: boolean): boolean {
         index = this._genericIndex(index);
         if (index == this._index && isNowPlaying) return false;
@@ -116,16 +120,31 @@ export class Queue {
         this._index = newIndex;
     }
 
+    search(query: RegExp | null) {
+        this._searchResult.length = 0;
+        if (query !== null) {
+            this._searchQuery = query;
+        } else {
+            query = this._searchQuery;
+        }
+        if (query === null) return;
+        for (let i = 0; i < this.len; i++) {
+            if (this._list[i].title.match(query)) {
+                this._searchResult.push(i);
+            }
+        }
+    }
+
     removeAll() {
         this._list = new Array<MusicInfo>();
         this._index = 0;
     }
 
-    // O(nlgn + n)
+    // O(nLgN + n)
     sort() {
         const currentURL = this._list[this._index].url;
         this._list.sort((a, b) => {
-            return a.title.localeCompare(b.title)
+            return a.title.localeCompare(b.title);
         });
         // fix current index after sorting
         for (let i = 0; i < this.len; i++) {
@@ -143,9 +162,9 @@ export class Queue {
         for (let i = 0; i < this.len; i++) {
             let j = ~~(Math.random() * i);
             // swap i and j
-            let tmp = this._list[i]
-            this._list[i] = this._list[j]
-            this._list[j] = tmp
+            let tmp = this._list[i];
+            this._list[i] = this._list[j];
+            this._list[j] = tmp;
         }
         // fix current index after shuffling
         for (let i = 0; i < this.len; i++) {
@@ -156,45 +175,49 @@ export class Queue {
         }
     }
 
-    private showListByPage(lang: string, page: number): string {
+    private showListByPage(lang: string, page: number, isShowSearchList: boolean = false): string {
         let content = '```yaml\n';
-        content += `page:\t${page}/${Math.max(this.pages, 1) - 1}\n`;
-        if (this.isEmpty()) {
+        const pages = isShowSearchList ? Math.ceil(this._searchResult.length / entriesOfOnePage) : this.pages;
+        content += `page:\t${page}/${Math.max(pages, 1) - 1}\n`;
+        if (this.isEmpty() || (isShowSearchList && this._searchResult.length === 0)) {
             content += (messages.playlist_is_empty as langMap)[lang];
         }
-        for (let i = page * entriesOfOnePage; i < Math.min((page + 1) * entriesOfOnePage, this.len); i++) {
-            if (i == this._index) {
-                content += '>' + `${i}`.padStart(3, ' ') + `:\t${this._list[i].title}\n`
+
+        let len = isShowSearchList ? this._searchResult.length : this.len;
+        for (let i = page * entriesOfOnePage; i < Math.min((page + 1) * entriesOfOnePage, len); i++) {
+            let j = isShowSearchList ? this._searchResult[i] : i;
+            if (j == this._index) {
+                content += '>' + `${j}`.padStart(3, ' ') + `:\t${this._list[j].title}\n`;
             } else {
-                content += `${i}`.padStart(4, ' ') + `:\t${this._list[i].title}\n`
+                content += `${j}`.padStart(4, ' ') + `:\t${this._list[j].title}\n`;
             }
         }
         return content + '\n```';
     }
 
-    showList(lang: string, page?: number | undefined): MessageEditOptions | Options {
+    showList(lang: string, page?: number | undefined, isShowSearchList: boolean = false): MessageEditOptions | Options {
         page = page ?? Math.floor(this._index / entriesOfOnePage);
         const btnNext = new ButtonBuilder()
-            .setCustomId(`next-${page}`)
+            .setCustomId(!isShowSearchList ? `next-${page}` : `nextSearch-${page}`)
             .setLabel('Next')
-            .setStyle(ButtonStyle.Secondary)
+            .setStyle(ButtonStyle.Secondary);
         const btnPre = new ButtonBuilder()
-            .setCustomId(`previous-${page}`)
+            .setCustomId(!isShowSearchList ? `pre-${page}` : `preSearch-${page}`)
             .setLabel('Previous')
-            .setStyle(ButtonStyle.Secondary)
+            .setStyle(ButtonStyle.Secondary);
         const btnRefresh = new ButtonBuilder()
-            .setCustomId('refresh')
+            .setCustomId(!isShowSearchList ? 'refresh' : 'refreshSearch')
             .setLabel('Refresh')
-            .setStyle(ButtonStyle.Secondary)
+            .setStyle(ButtonStyle.Secondary);
 
         return {
-            content: this.showListByPage(lang, page),
+            content: this.showListByPage(lang, page, isShowSearchList),
             components: [new ActionRowBuilder()
                 .addComponents(btnPre)
                 .addComponents(btnRefresh)
                 .addComponents(btnNext)
             ]
-        }
+        };
     }
 
     toList(): any[] {

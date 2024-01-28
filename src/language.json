@@ -8,7 +8,7 @@
             "en": "Detach Music Start Pro from the voice channel.",
             "zh": "將 Music Start Pro 踢出語音房"
         },
-        "append":{
+        "append": {
             "en": "Append the song to the playlist.",
             "zh": "將歌曲加入播放清單"
         },
@@ -24,7 +24,7 @@
             "en": "Stop the player and jump to the first song of the playlist.",
             "zh": "停止播放，並回到播放清單最前端"
         },
-        "repeat":{
+        "repeat": {
             "en": "Toggle repeat mode. If on, repeats the current song.",
             "zh": "重複播放當前歌曲。透過同個指令取消"
         },
@@ -32,11 +32,15 @@
             "en": "Show the playlist with index.",
             "zh": "列出播放清單及索引"
         },
+        "search": {
+            "en": "Search the song by title in the playlist.",
+            "zh": "在播放清單中根據音樂標題搜尋"
+        },
         "distinct": {
             "en": "Remove duplicate songs.",
             "zh": "刪除重複歌曲"
         },
-        "current":{
+        "current": {
             "en": "Show the current information",
             "zh": "顯示當前資訊"
         },
@@ -92,6 +96,10 @@
             "en": "Add the songs about LoveLive Sunshine into playlist. The list is provided by Benny.",
             "zh": "將 LoveLive Sunshine 相關歌曲加入播放清單中。清單由 Benny 提供"
         },
+        "genjitsu": {
+            "en": "Add the songs about Yohane the Parhelion into playlist. The list is provided by Benny.",
+            "zh": "請幻日夜羽相關歌曲加入播放清單中。清單由 Benny 提供"
+        },
         "azalea": {
             "en": "Add AZALEA's songs that author recommends into playlist.",
             "zh": "將作者精選的 AZALEA 的歌加入播放清單中"
@@ -108,7 +116,7 @@
             "en": "Add some Liella's songs into playlist. The list is provided by Benny.",
             "zh": "將 Liella 的歌加入播放清單中。清單由 Benny 提供"
         },
-        "q4":{
+        "q4": {
             "en": "Add QU4RTZ's songs into playlist.",
             "zh": "將 QU4RTZ 的歌加入播放清單中。"
         },
@@ -122,7 +130,7 @@
         }
     },
     "params": {
-        "youtube":{
+        "youtube": {
             "en": "YouTube URL or YouTube video ID.",
             "zh": "YouTube URL 或 YouTube video ID."
         },
@@ -145,12 +153,20 @@
         "json": {
             "en": "JSON string.",
             "zh": "JSON 格式字串"
+        },
+        "regexp": {
+            "en": "regular expression (case insensitive)",
+            "zh": "正規表示式(忽略大小寫)"
         }
     },
     "messages": {
         "error": {
             "en": "error",
             "zh": "錯誤"
+        },
+        "success": {
+            "en": "success",
+            "zh": "成功"
         },
         "appended_to_the_playlist": {
             "en": "Appended to the playlist",
@@ -204,7 +220,7 @@
             "en": "Repeat mode is turned on.",
             "zh": "已啟用單曲循環模式"
         },
-        "repeat_off":{
+        "repeat_off": {
             "en": "Repeat mode is turned off.",
             "zh": "已關閉單曲循環模式"
         },

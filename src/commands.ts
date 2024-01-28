@@ -38,6 +38,17 @@ export class Commands {
             name: 'list',
             description: instructions.list[lang]
         }, {
+            name: 'search',
+            description: instructions.distinct[lang],
+            options: [
+                {
+                    name: 'regexp',
+                    type: ApplicationCommandOptionType.String,
+                    description: params.regexp[lang],
+                    required: true
+                }
+            ]
+        }, {
             name: 'distinct',
             description: instructions.distinct[lang]
         }, {
@@ -144,6 +155,9 @@ export class Commands {
         }, {
             name: 'llss',
             description: instructions.llss[lang]
+        }, {
+            name: 'genjitsu',
+            description: instructions.genjitsu[lang]
         }, {
             name: 'azalea',
             description: instructions.azalea[lang]

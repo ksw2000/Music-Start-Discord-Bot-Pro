@@ -5,7 +5,8 @@ import {
     Guild,
     MessagePayload,
     MessageEditOptions,
-    Options
+    Options,
+    Events
 } from 'discord.js';
 
 import ytdl from 'ytdl-core';
@@ -19,17 +20,17 @@ interface langMap {
     [key: string]: string;
 }
 
-const logFile = 'data.json'
+const logFile = 'data.json';
 
 export function main(token: string, useLog: boolean) {
     // load buckets
     if (useLog) {
-        console.log("The log file will be read/written at:", logFile)
-        console.log("You can disable log file by -d or --disable-log")
+        console.log("The log file will be read/written at:", logFile);
+        console.log("You can disable log file by -d or --disable-log");
         Bucket.load(logFile);
     } else {
-        console.log("Log file: disable")
-        Bucket.disableLog()
+        console.log("Log file: disable");
+        Bucket.disableLog();
     }
 
     const progressBarLen = 35;
@@ -39,34 +40,47 @@ export function main(token: string, useLog: boolean) {
 
     client.login(token);
 
-    client.once('ready', (client: any) => {
+    client.once(Events.ClientReady, (client: any) => {
         console.log(`Logged in as ${client.user?.tag}!`);
     });
 
-    client.on('guildCreate', async (guild: Guild) => {
+    client.on(Events.GuildCreate, async (guild: Guild) => {
         console.log(`guild crated! ${guild.id}`);
         Commands.register(guild);
     });
 
-    client.on('error', (e: any) => {
+    client.on(Events.Error, (e: any) => {
         console.log('client on error', e);
     });
 
-    client.on('interactionCreate', async (interaction: Interaction) => {
+    client.on(Events.InteractionCreate, async (interaction: Interaction) => {
         if (!interaction.guildId) return;
         let bucket = Bucket.find(interaction.guildId);
         if (interaction.isButton()) {
             let ids = interaction.customId.split('-');
-            if (ids.length === 2) {
-                let currentPage = parseInt(ids[1]);
-                if (ids[0] === 'next') {
-                    await interaction.update(bucket.queue.showList(bucket.lang, bucket.queue.genericPage(currentPage + 1)) as MessageEditOptions);
-                } else if (ids[0] === 'previous') {
-                    await interaction.update(bucket.queue.showList(bucket.lang, bucket.queue.genericPage(currentPage - 1)) as MessageEditOptions);
+            if (ids.length === 2 || ids.length === 3) {
+                const currentPage = parseInt(ids[1]);
+                switch (ids[0]) {
+                    case 'next':
+                        await interaction.update(bucket.queue.showList(bucket.lang, bucket.queue.genericPage(currentPage + 1), false) as MessageEditOptions);
+                        break;
+                    case 'pre':
+                        await interaction.update(bucket.queue.showList(bucket.lang, bucket.queue.genericPage(currentPage - 1), false) as MessageEditOptions);
+                        break;
+                    case 'nextSearch':
+                        await interaction.update(bucket.queue.showList(bucket.lang, bucket.queue.genericPage(currentPage + 1), true) as MessageEditOptions);
+                        break;
+                    case 'preSearch':
+                        await interaction.update(bucket.queue.showList(bucket.lang, bucket.queue.genericPage(currentPage - 1), true) as MessageEditOptions);
+                        break;
                 }
             } else if (ids.length === 1) {
                 if (ids[0] === 'refresh') {
                     await interaction.update(bucket.queue.showList(bucket.lang) as MessageEditOptions);
+                } else if (ids[0] === 'refreshSearch') {
+                    // search again
+                    bucket.queue.search(null);
+                    await interaction.update(bucket.queue.showList(bucket.lang, 0, true) as MessageEditOptions);
                 }
             }
         } else if (interaction.isCommand()) {
@@ -135,6 +149,16 @@ export function main(token: string, useLog: boolean) {
                     bucket.queue.removeDuplicate();
                 }
                 await interaction.reply(new MessagePayload(interaction, bucket.queue.showList(bucket.lang) as Options));
+            } else if (interaction.commandName === 'search') {
+                let query: RegExp | null = null;
+                try {
+                    query = new RegExp(interaction.options.get('regexp')?.value as string, "i");
+                } catch (e) {
+                    await interaction.reply(new MessagePayload(interaction, Util.createEmbedMessage((messages.error as langMap)[bucket.lang],
+                        `Invalid Regular Expression ${Util.randomCry()}\n${e}`, true)));
+                }
+                bucket.queue.search(query);
+                await interaction.reply(new MessagePayload(interaction, bucket.queue.showList(bucket.lang, 0, true)));
             } else if (interaction.commandName === 'current') {
                 var description: string = `Volume: ${bucket.volume}\n`;
                 description += `Is playing: ${bucket.playing ? "yes" : "no"}\n`;
@@ -146,7 +170,7 @@ export function main(token: string, useLog: boolean) {
             } else if (interaction.commandName === 'jump' || interaction.commandName === 'go') {
                 if (bucket.queue.isEmpty()) {
                     await interaction.reply((messages.playlist_is_empty_error as langMap)[bucket.lang]);
-                    return
+                    return;
                 }
                 await interaction.deferReply();
                 const index = interaction.options.get('index')?.value as number;
@@ -169,12 +193,12 @@ export function main(token: string, useLog: boolean) {
                 const index = interaction.options.get('index')?.value as number;
                 // if remove success
                 if (bucket.queue.remove(index, bucket.playing)) {
-                    await interaction.reply(new MessagePayload(interaction, Util.createEmbedMessage('',
+                    await interaction.reply(new MessagePayload(interaction, Util.createEmbedMessage((messages.success as langMap)[bucket.lang],
                         `${(messages.removed_successfully as langMap)[bucket.lang]} ${Util.randomHappy()}`)));
-                } else {
-                    await interaction.reply(new MessagePayload(interaction, Util.createEmbedMessage((messages.error as langMap)[bucket.lang],
-                        `${(messages.cannot_remove_the_playing_song as langMap)[bucket.lang]} ${Util.randomCry()}`, true)));
+                    return;
                 }
+                await interaction.reply(new MessagePayload(interaction, Util.createEmbedMessage((messages.error as langMap)[bucket.lang],
+                    `${(messages.cannot_remove_the_playing_song as langMap)[bucket.lang]} ${Util.randomCry()}`, true)));
             } else if (interaction.commandName === 'clear') {
                 if (bucket.playing) {
                     bucket.player.stop();
@@ -256,11 +280,11 @@ export function main(token: string, useLog: boolean) {
                             interaction.editReply('```yaml\n' + Util.progressBar(current, all, progressBarLen) + '\n```');
                         });
                         downloadListener.once('done', (all, fail) => {
-                            downloadListener.removeAllListeners()
+                            downloadListener.removeAllListeners();
                             interaction.editReply('```yaml\n' + Util.progressBar(all, all, progressBarLen) + ' ✅\n```' + `success: ${all - fail} / fail: ${fail}`);
                         });
                         downloadListener.once('error', (e) => {
-                            downloadListener.removeAllListeners()
+                            downloadListener.removeAllListeners();
                             interaction.editReply(Util.createEmbedMessage('Error sequentialEnQueueWithBatch()', `${Util.randomCry()}\n${e}`, true));
                         });
                         Util.sequentialEnQueueWithBatch(list, bucket.queue, downloadListener);
@@ -271,6 +295,7 @@ export function main(token: string, useLog: boolean) {
                 }
             } else if (interaction.commandName === 'aqours' ||
                 interaction.commandName === 'llss' ||
+                interaction.commandName === 'genjitsu' ||
                 interaction.commandName === 'azalea' ||
                 interaction.commandName === 'muse' ||
                 interaction.commandName === 'liella' ||
@@ -282,14 +307,14 @@ export function main(token: string, useLog: boolean) {
 
                 // done message 
                 let done: string = "";
-                if (interaction.commandName === 'aqours' || interaction.commandName === 'llss') {
+                if (interaction.commandName === 'aqours' || interaction.commandName === 'llss' || interaction.commandName === 'genjitsu') {
                     done = 'Aqours SunShine!';
                 } else if (interaction.commandName === 'azalea') {
-                    done = "恋の喜び咲かせます、AZALEAです！ ";
+                    done = '恋の喜び咲かせます、AZALEAです！ ';
                 } else if (interaction.commandName === 'muse') {
                     done = "μ's music start!";
                 } else if (interaction.commandName === 'liella') {
-                    done = "Song for me, song for you, song for all!";
+                    done = 'Song for me, song for you, song for all!';
                 } else if (interaction.commandName === 'nijigasaki') {
                     done = "";
                 }
@@ -307,7 +332,7 @@ export function main(token: string, useLog: boolean) {
                 });
                 Util.sequentialEnQueueWithBatch(list, bucket.queue, downloadListener);
             } else if (interaction.commandName === 'lang') {
-                let lang: string = interaction.options.get('language')?.value as string
+                let lang: string = interaction.options.get('language')?.value as string;
                 if (['zh', 'en'].includes(lang)) {
                     bucket.lang = lang;
                     await interaction.reply((messages.language_changed_successfully as langMap)[bucket.lang]);
