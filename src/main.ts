@@ -156,6 +156,7 @@ export function main(token: string, useLog: boolean) {
                 } catch (e) {
                     await interaction.reply(new MessagePayload(interaction, Util.createEmbedMessage((messages.error as langMap)[bucket.lang],
                         `Invalid Regular Expression ${Util.randomCry()}\n${e}`, true)));
+                    return;
                 }
                 bucket.queue.search(query);
                 await interaction.reply(new MessagePayload(interaction, bucket.queue.showList(bucket.lang, 0, true)));
@@ -301,7 +302,8 @@ export function main(token: string, useLog: boolean) {
                 interaction.commandName === 'liella' ||
                 interaction.commandName === 'nijigasaki' ||
                 interaction.commandName === 'q4' ||
-                interaction.commandName === 'hasunosora') {
+                interaction.commandName === 'hasunosora' ||
+                interaction.commandName === '5yncri5e') {
                 // fetch recommend music list
                 let list = require('../recommend/' + interaction.commandName + '.json').list;
 

@@ -168,6 +168,9 @@ export class Commands {
             name: 'liella',
             description: instructions.liella[lang]
         }, {
+            name: '5yncri5e',
+            description: instructions.syncri5e[lang]
+        }, {
             name: 'nijigasaki',
             description: instructions.nijigasaki[lang]
         }, {
