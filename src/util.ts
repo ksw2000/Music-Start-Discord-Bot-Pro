@@ -5,7 +5,7 @@ import {
 
 import { Queue } from './queue';
 import { MusicInfo } from './musicInfo';
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
 import ytdl from 'ytdl-core';
 
 export class Util {
