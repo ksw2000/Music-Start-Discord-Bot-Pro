@@ -3,6 +3,7 @@ import {
     CommandInteraction,
     GuildMember,
     VoiceChannel,
+    GuildTextBasedChannel,
 } from 'discord.js';
 
 import {
@@ -22,10 +23,11 @@ import {
 import { MusicInfo } from './musicInfo';
 import { Util } from './util';
 import { Queue } from './queue';
-import ytdl from 'ytdl-core';
+import ytdl from '@distube/ytdl-core';
 import { messages } from './language.json';
 import { Commands } from './commands';
 import *  as fs from 'fs';
+import { channel } from 'diagnostics_channel';
 
 interface langMap {
     [key: string]: string;
@@ -152,7 +154,8 @@ export class Bucket {
             // if there is no one in voice channel when the player is playing, pause.
             if (this.voiceChannel != null && this.voiceChannel?.members.size <= 1) {
                 player.pause();
-                this.interaction?.channel?.send((messages.paused_because_no_one_in_channel as langMap)[this.lang]);
+                let channel  = this.interaction?.channel as GuildTextBasedChannel | null | undefined;
+                channel?.send((messages.paused_because_no_one_in_channel as langMap)[this.lang]);
             }
         });
 
@@ -190,7 +193,8 @@ export class Bucket {
             console.log(error.name);
             console.log(error.stack);
             this._playerErrorLock = true;
-            this.interaction?.channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang],
+            let channel = this.interaction?.channel as GuildTextBasedChannel | null | undefined;
+            channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang],
                 `${(messages.player_error as langMap)[this.lang]} ${Util.randomCry()}`, true));
             console.log('Reset player');
             this.player = this.createPlayer();
@@ -225,7 +229,8 @@ export class Bucket {
 
                     this.play(this.queue.current).then(() => {
                         if (this.verbose) {
-                            this.interaction?.channel?.send(Util.createMusicInfoMessage(this.queue.current));
+                            let channel = this.interaction?.channel as GuildTextBasedChannel | null | undefined;
+                            channel?.send(Util.createMusicInfoMessage(this.queue.current));
                         }
                     });
                 }
@@ -280,13 +285,14 @@ export class Bucket {
             this.player.play(this.resource);
             await entersState(this.player, AudioPlayerStatus.Playing, 3e4);
         } catch (e) {
-            this.interaction?.channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang], `${e}`, true));
+            let channel = this.interaction?.channel as GuildTextBasedChannel | null | undefined;
+            channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang], `${e}`, true));
             console.error("line274 bucket.ts play() error", e, "try to reset player");
             this.player = this.createPlayer();
             if (this.interaction != null) {
                 this.connect(this.interaction as Interaction);
             }
-            this.interaction?.channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang],
+            channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang],
                 `${(messages.player_error as langMap)[this.lang]} ${Util.randomCry()}`, true));
         }
     }

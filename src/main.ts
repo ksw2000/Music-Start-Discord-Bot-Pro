@@ -9,7 +9,7 @@ import {
     Events
 } from 'discord.js';
 
-import ytdl from 'ytdl-core';
+import ytdl from '@distube/ytdl-core';
 import { MusicInfo } from './musicInfo';
 import { Util } from './util';
 import { Bucket } from './bucket';

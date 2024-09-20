@@ -6,7 +6,7 @@ import {
 import { Queue } from './queue';
 import { MusicInfo } from './musicInfo';
 import { EventEmitter } from 'node:events';
-import ytdl from 'ytdl-core';
+import ytdl from '@distube/ytdl-core';
 
 export class Util {
     static randomHappy() {

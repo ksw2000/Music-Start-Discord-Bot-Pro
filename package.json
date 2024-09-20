@@ -16,13 +16,13 @@
   },
   "dependencies": {
     "@discordjs/voice": "^0.17.0",
+    "@distube/ytdl-core": "^4.14.4",
     "@types/node": "^22.1.0",
     "commander": "^12.1.0",
     "discord.js": "^14.16.1",
     "ffmpeg-static": "^5.1.0",
     "opusscript": "^0.1.1",
-    "tweetnacl": "^1.0.3",
-    "ytdl-core": "^4.11.5"
+    "tweetnacl": "^1.0.3"
   },
   "bin": {
     "ms": "dist/cli.js"
