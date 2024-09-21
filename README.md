@@ -85,6 +85,7 @@ https://discord.com/api/oauth2/authorize?client_id=[YOUR-CLIENT-ID]&permissions=
   + `/liella` Add some **Liella**'s songs into playlist. The list is provided by Benny.
   + `/hasunosora` Add **Hasu No Sora**'s songs into playlist. The list is provided by Benny.
   + `/genjitsu` Add the songs about **Yohane the Parhelion** into playlist. The list is provided by Benny.
+  + `/5yncri5e` Add **5yncri5e**'s songs into playlist.
 + General index number
   + The index starts at 0, and can be the modulus of the total number of songs.
   + Negative number -1 stands for the last song
@@ -93,7 +94,7 @@ https://discord.com/api/oauth2/authorize?client_id=[YOUR-CLIENT-ID]&permissions=
     + The second song 1 = 17 (mod 16)
     + The last song 15 = 31 = -1 (mod 16)
 
-![preview](https://imgur.com/06iPlN4.png)
+![preview](https://raw.githubusercontent.com/ksw2000/Music-Start-Discord-Bot-Pro/refs/heads/main/demo.gif)
 
 ## Develop
 
