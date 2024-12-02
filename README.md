@@ -96,7 +96,7 @@ https://discord.com/api/oauth2/authorize?client_id=[YOUR-CLIENT-ID]&permissions=
 
 ![preview](https://raw.githubusercontent.com/ksw2000/Music-Start-Discord-Bot-Pro/refs/heads/main/demo.gif)
 
-## Develop
+## Contribution
 
 ```sh
 # clone the repository
@@ -111,3 +111,18 @@ npm run start
 # Please use lint before making a pull request
 npm run lint
 ```
+
+## Deploy by Docker
+
+Build docker image by using Dockerfile in `docker/Dockerfile` or pull the docker image.
+
+```sh
+docker build -t my-music-start .
+
+# or
+
+docker pull ksw2000/music-start
+```
+
+ 
+
