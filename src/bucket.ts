@@ -27,7 +27,6 @@ import ytdl from '@distube/ytdl-core';
 import { messages } from './language.json';
 import { Commands } from './commands';
 import *  as fs from 'fs';
-import { channel } from 'diagnostics_channel';
 
 interface langMap {
     [key: string]: string;
