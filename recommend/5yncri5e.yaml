@@ -1,10 +1,9 @@
-lists:
-  - url: 4WAoe8VlhXM
-    name: Jellyfish
-  - url: HhnVvviEV5k
-    name: Dancing Raspberry
-  - url: tDuEnVtfpH0
-    name: Thank you Good morning
-  - url: TD5mJofGN9o
-    name: A Little Love
-
+list:
+  - u: 4WAoe8VlhXM
+    n: Jellyfish
+  - u: HhnVvviEV5k
+    n: Dancing Raspberry
+  - u: tDuEnVtfpH0
+    n: Thank you Good morning
+  - u: TD5mJofGN9o
+    n: A Little Love
