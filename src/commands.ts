@@ -1,4 +1,5 @@
 import { Guild, ApplicationCommandOptionType } from 'discord.js';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { instructions, params } = require('./language.json');
 
 export class Commands {

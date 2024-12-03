@@ -31,7 +31,7 @@
   "scripts": {
     "build": "tsc",
     "start": "npx ts-node src/cli.ts -d",
-    "lint": "eslint src/**.ts"
+    "lint": "npx eslint src/**.ts --fix"
   },
   "author": "Kashiwa",
   "license": "MIT",
@@ -41,7 +41,9 @@
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.50.0",
     "@typescript-eslint/parser": "^5.50.0",
-    "eslint": "^8.33.0",
-    "typescript": "^5.5.4"
+    "eslint": "^8.57.1",
+    "globals": "^15.13.0",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.17.0"
   }
 }

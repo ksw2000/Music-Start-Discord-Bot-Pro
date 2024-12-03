@@ -43,7 +43,7 @@ export function main(token: string, useLog: boolean) {
 
     client.login(token);
 
-    client.once(Events.ClientReady, (client: any) => {
+    client.once(Events.ClientReady, (client: Client<true>) => {
         console.log(`Logged in as ${client.user?.tag}!`);
     });
 
@@ -52,15 +52,15 @@ export function main(token: string, useLog: boolean) {
         Commands.register(guild);
     });
 
-    client.on(Events.Error, (e: any) => {
+    client.on(Events.Error, (e: Error) => {
         console.log('client on error', e);
     });
 
     client.on(Events.InteractionCreate, async (interaction: Interaction) => {
         if (!interaction.guildId) return;
-        let bucket = Bucket.find(interaction.guildId);
+        const bucket = Bucket.find(interaction.guildId);
         if (interaction.isButton()) {
-            let ids = interaction.customId.split('-');
+            const ids = interaction.customId.split('-');
             if (ids.length === 2 || ids.length === 3) {
                 const currentPage = parseInt(ids[1]);
                 switch (ids[0]) {
@@ -139,7 +139,7 @@ export function main(token: string, useLog: boolean) {
                 if (bucket.queue.isEmpty()) {
                     await interaction.reply((messages.playlist_is_empty_error as langMap)[bucket.lang]);
                 } else {
-                    var currentState: boolean = bucket.toggleRepeat();
+                    const currentState: boolean = bucket.toggleRepeat();
                     if (currentState) {
                         await interaction.reply((messages.repeat_on as langMap)[bucket.lang]);
                     } else {
@@ -164,7 +164,7 @@ export function main(token: string, useLog: boolean) {
                 bucket.queue.search(query);
                 await interaction.reply(new MessagePayload(interaction, bucket.queue.showList(bucket.lang, 0, true)));
             } else if (interaction.commandName === 'current') {
-                var description: string = `Volume: ${bucket.volume}\n`;
+                let description: string = `Volume: ${bucket.volume}\n`;
                 description += `Is playing: ${bucket.playing ? "yes" : "no"}\n`;
                 description += `Number of songs: ${bucket.queue.len}`;
                 await interaction.reply(new MessagePayload(interaction, Util.createEmbedMessage("current", description)));
@@ -264,7 +264,7 @@ export function main(token: string, useLog: boolean) {
                         await interaction.reply((messages.playlist_is_empty as langMap)[bucket.lang]);
                     }
                     for (let j = 0; j < bucket.queue.len / batch; j++) {
-                        let url: Array<string> = [];
+                        const url: Array<string> = [];
                         for (let i = batch * j; i < Math.min(bucket.queue.len, batch * (j + 1)); i++) {
                             url.push(bucket.queue.list[i].url.replace('https://www.youtube.com/watch?v=', ''));
                         }
@@ -284,7 +284,7 @@ export function main(token: string, useLog: boolean) {
                         });
                         downloadListener.once('done', (all, fail) => {
                             downloadListener.removeAllListeners();
-                            interaction.editReply('```yaml\n' + Util.progressBar(all, all, progressBarLen) + ' ✅\n```' + `❌ ${fail}`);
+                            interaction.editReply('```yaml\n' + Util.progressBar(all, all, progressBarLen) + ' ✅\n\n'+`✅: ${all-fail} ❌: ${fail}`+'```');
                         });
                         downloadListener.once('error', (e) => {
                             downloadListener.removeAllListeners();
@@ -328,7 +328,7 @@ export function main(token: string, useLog: boolean) {
                 Util.enQueueCached(data.list, bucket.queue);
                 interaction.editReply('```yaml\n' + Util.progressBar(data.list.length, data.list.length, 35) + ' ✅\n```' + `${done}`);
             } else if (interaction.commandName === 'lang') {
-                let lang: string = interaction.options.get('language')?.value as string;
+                const lang: string = interaction.options.get('language')?.value as string;
                 if (['zh', 'en'].includes(lang)) {
                     bucket.lang = lang;
                     await interaction.reply((messages.language_changed_successfully as langMap)[bucket.lang]);

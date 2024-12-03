@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 import commander from 'commander';
 import { main } from './main';
+import { version } from '../package.json';
 import 'process';
 
-commander.program.version('1.2.0', '-v, --version', 'output the current version');
+commander.program.version(version, '-v, --version', 'output the current version');
 commander.program
     .addOption(new commander.Option('-t, --token <discord_bot_token>', 'specify the discord bot token').default(''))
     .addOption(new commander.Option('-d, --disable-log', 'do not save and load the log file'))
@@ -12,7 +13,7 @@ commander.program
 const options = commander.program.opts();
 
 let token: string = options.token;
-let optDisableLog = options.disableLog;
+const optDisableLog = options.disableLog;
 let useLog: boolean = true;
 
 if (optDisableLog) {

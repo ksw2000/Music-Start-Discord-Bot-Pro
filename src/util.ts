@@ -80,7 +80,7 @@ export class Util {
         listener?.emit('progress', 0, total);
         batchList.reduce(async (p, j) => {
             await p.then(async () => {
-                let task: Promise<ytdl.videoInfo>[] = [];
+                const task: Promise<ytdl.videoInfo>[] = [];
                 for (let i = j * b; i < Math.min(b * (j + 1), total); i++) {
                     done++;
                     task.push(ytdl.getInfo(list[i]));
@@ -103,7 +103,7 @@ export class Util {
 
     static progressBar(current: number, all: number, bar: number): string {
         let content = '[';
-        let percent = all == 0 ? 0 : Math.min(1, current / all);
+        const percent = all == 0 ? 0 : Math.min(1, current / all);
         for (let i = 0; i < Math.ceil(percent * bar); i++) {
             content += '=';
         }

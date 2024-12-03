@@ -61,13 +61,14 @@ export class Bucket {
         Bucket._logFn = fn;
         // if the file does not exist, exit
         if (!fs.existsSync(fn)) return;
-        var data = JSON.parse(fs.readFileSync(fn, { encoding: 'utf-8', flag: 'r' }));
+        const data = JSON.parse(fs.readFileSync(fn, { encoding: 'utf-8', flag: 'r' }));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         Object.keys(data).forEach((k: any) => {
-            var e = data[k];
-            var bucket = new Bucket(k);
+            const e = data[k];
+            const bucket = new Bucket(k);
             bucket.lang = e.lang;
             bucket.volume = e.volume;
-            e.queue.forEach((f: any) => {
+            e.queue.forEach((f: MusicInfo) => {
                 bucket.queue.add(new MusicInfo(f.url, f.title, f.likes, f.viewCount, f.playCounter));
             });
             Bucket.instant.set(k, bucket);
@@ -77,7 +78,8 @@ export class Bucket {
     // store all instance of Bucket when _useLog is true
     store() {
         if (!Bucket._useLog) return;
-        var ret: any = {};
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const ret: any = {};
         Bucket.instant.forEach((e: Bucket) => {
             ret[e.id] = {
                 lang: this.lang,
@@ -153,7 +155,7 @@ export class Bucket {
             // if there is no one in voice channel when the player is playing, pause.
             if (this.voiceChannel != null && this.voiceChannel?.members.size <= 1) {
                 player.pause();
-                let channel  = this.interaction?.channel as GuildTextBasedChannel | null | undefined;
+                const channel  = this.interaction?.channel as GuildTextBasedChannel | null | undefined;
                 channel?.send((messages.paused_because_no_one_in_channel as langMap)[this.lang]);
             }
         });
@@ -192,7 +194,7 @@ export class Bucket {
             console.log(error.name);
             console.log(error.stack);
             this._playerErrorLock = true;
-            let channel = this.interaction?.channel as GuildTextBasedChannel | null | undefined;
+            const channel = this.interaction?.channel as GuildTextBasedChannel | null | undefined;
             channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang],
                 `${(messages.player_error as langMap)[this.lang]} ${Util.randomCry()}`, true));
             console.log('Reset player');
@@ -228,7 +230,7 @@ export class Bucket {
 
                     this.play(this.queue.current).then(() => {
                         if (this.verbose) {
-                            let channel = this.interaction?.channel as GuildTextBasedChannel | null | undefined;
+                            const channel = this.interaction?.channel as GuildTextBasedChannel | null | undefined;
                             channel?.send(Util.createMusicInfoMessage(this.queue.current));
                         }
                     });
@@ -284,7 +286,7 @@ export class Bucket {
             this.player.play(this.resource);
             await entersState(this.player, AudioPlayerStatus.Playing, 3e4);
         } catch (e) {
-            let channel = this.interaction?.channel as GuildTextBasedChannel | null | undefined;
+            const channel = this.interaction?.channel as GuildTextBasedChannel | null | undefined;
             channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang], `${e}`, true));
             console.error("line274 bucket.ts play() error", e, "try to reset player");
             this.player = this.createPlayer();

@@ -98,14 +98,14 @@ export class Queue {
         if (index1 == index2) return;
         if (index1 == this._index) this._index = index2;
         if (index2 == this._index) this._index = index1;
-        let tmp = this._list[index1];
+        const tmp = this._list[index1];
         this._list[index1] = this._list[index2];
         this._list[index2] = tmp;
     }
 
     removeDuplicate() {
-        let set = new Set<string>(); // set of urls
-        let newList = new Array<MusicInfo>();
+        const set = new Set<string>(); // set of urls
+        const newList = new Array<MusicInfo>();
         let newIndex = 0;
         for (let i = 0; i < this.len; i++) {
             if (!set.has(this._list[i].url)) {
@@ -160,9 +160,9 @@ export class Queue {
         const currentURL = this._list[this._index].url;
         // Knuth shuffle algorithm
         for (let i = 0; i < this.len; i++) {
-            let j = ~~(Math.random() * i);
+            const j = ~~(Math.random() * i);
             // swap i and j
-            let tmp = this._list[i];
+            const tmp = this._list[i];
             this._list[i] = this._list[j];
             this._list[j] = tmp;
         }
@@ -184,9 +184,9 @@ export class Queue {
             content += (messages.playlist_is_empty as langMap)[lang];
         }
 
-        let len = isShowSearchList ? this._searchResult.length : this.len;
+        const len = isShowSearchList ? this._searchResult.length : this.len;
         for (let i = page * entriesOfOnePage; i < Math.min((page + 1) * entriesOfOnePage, len); i++) {
-            let j = isShowSearchList ? this._searchResult[i] : i;
+            const j = isShowSearchList ? this._searchResult[i] : i;
             if (j == this._index) {
                 content += '>' + `${j}`.padStart(3, ' ') + `:\t${this._list[j].title}\n`;
             } else {
@@ -221,17 +221,7 @@ export class Queue {
         };
     }
 
-    toList(): any[] {
-        var ret: any[] = [];
-        this._list.forEach((music) => {
-            ret.push({
-                url: music.url,
-                title: music.title,
-                likes: music.likes,
-                viewCount: music.viewCount,
-                playCounter: music.playCounter
-            });
-        });
-        return ret;
+    toList(): MusicInfo[] {
+        return this._list;
     }
 }
