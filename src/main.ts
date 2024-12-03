@@ -10,7 +10,7 @@ import {
 } from 'discord.js';
 
 import ytdl from '@distube/ytdl-core';
-import { MusicInfo } from './musicInfo';
+import { CachedMusicInfo, MusicInfo } from './musicInfo';
 import { Util } from './util';
 import { Bucket } from './bucket';
 import { Commands } from './commands';
@@ -24,11 +24,6 @@ interface langMap {
 }
 
 const logFile = 'data.json';
-
-interface recommendList {
-    url: string
-    name: string
-}[];
 
 export function main(token: string, useLog: boolean) {
     // load buckets
@@ -264,7 +259,7 @@ export function main(token: string, useLog: boolean) {
             } else if (interaction.commandName === 'json') {
                 await interaction.deferReply();
                 if (interaction.options.get('json') === null) {
-                    let batch = 100;
+                    const batch = 100;
                     if (bucket.queue.isEmpty()) {
                         await interaction.reply((messages.playlist_is_empty as langMap)[bucket.lang]);
                     }
@@ -281,16 +276,15 @@ export function main(token: string, useLog: boolean) {
                         }
                     }
                 } else {
-                    let list: Array<string> = [];
                     try {
-                        list = JSON.parse(interaction.options.get('json')!.value as string);
+                        const list = JSON.parse(interaction.options.get('json')!.value as string);
                         const downloadListener = Util.sequentialEnqueueWithBatchListener();
                         downloadListener.on('progress', (current, all) => {
                             interaction.editReply('```yaml\n' + Util.progressBar(current, all, progressBarLen) + '\n```');
                         });
                         downloadListener.once('done', (all, fail) => {
                             downloadListener.removeAllListeners();
-                            interaction.editReply('```yaml\n' + Util.progressBar(all, all, progressBarLen) + ' ✅\n```' + `success: ${all - fail} / fail: ${fail}`);
+                            interaction.editReply('```yaml\n' + Util.progressBar(all, all, progressBarLen) + ' ✅\n```' + `❌ ${fail}`);
                         });
                         downloadListener.once('error', (e) => {
                             downloadListener.removeAllListeners();
@@ -310,9 +304,13 @@ export function main(token: string, useLog: boolean) {
                 interaction.commandName === 'liella' ||
                 interaction.commandName === 'nijigasaki' ||
                 interaction.commandName === 'q4' ||
-                interaction.commandName === 'hasunosora') {
+                interaction.commandName === 'hasunosora' ||
+                interaction.commandName === '5yncri5e') {
                 // fetch recommend music list
-                let list = require('../recommend/' + interaction.commandName + '.json').list;
+                const file = fs.readFileSync(path.join(__dirname, `../recommend/${interaction.commandName}.yaml`), 'utf-8');
+                const data: {
+                    list: CachedMusicInfo[]
+                } = YAML.parse(file);
 
                 // done message 
                 let done: string = "";
@@ -324,42 +322,11 @@ export function main(token: string, useLog: boolean) {
                     done = "μ's music start!";
                 } else if (interaction.commandName === 'liella') {
                     done = 'Song for me, song for you, song for all!';
-                } else if (interaction.commandName === 'nijigasaki') {
-                    done = "";
                 }
 
                 await interaction.deferReply();
-                const downloadListener = Util.sequentialEnqueueWithBatchListener();
-                downloadListener.on('progress', (current, all) => {
-                    interaction.editReply('```yaml\n' + Util.progressBar(current, all, progressBarLen) + '\n```');
-                });
-                downloadListener.once('done', (all, fail) => {
-                    interaction.editReply('```yaml\n' + Util.progressBar(all, all, 35) + ' ✅\n```' + `${done}`);
-                });
-                downloadListener.once('error', (e) => {
-                    interaction.editReply(Util.createEmbedMessage('Error', `${Util.randomCry()}\n${e}`, true));
-                });
-                Util.sequentialEnQueueWithBatch(list, bucket.queue, downloadListener);
-            } else if (interaction.commandName === '5yncri5e') {
-                const file = fs.readFileSync(path.join(__dirname, '../recommend/5yncri5e.yaml'), 'utf-8');
-                const list: {
-                    lists: {
-                        url: string
-                        name: string
-                    }[]
-                } = YAML.parse(file);
-                await interaction.deferReply();
-                const downloadListener = Util.sequentialEnqueueWithBatchListener();
-                downloadListener.on('progress', (current, all) => {
-                    interaction.editReply('```yaml\n' + Util.progressBar(current, all, progressBarLen) + '\n```');
-                });
-                downloadListener.once('done', (all, fail) => {
-                    interaction.editReply('```yaml\n' + Util.progressBar(all, all, 35) + ' ✅\n```');
-                });
-                downloadListener.once('error', (e) => {
-                    interaction.editReply(Util.createEmbedMessage('Error', `${Util.randomCry()}\n${e}`, true));
-                });
-                Util.sequentialEnQueueWithBatch(list.lists.map(k=>k.url), bucket.queue, downloadListener);
+                Util.enQueueCached(data.list, bucket.queue);
+                interaction.editReply('```yaml\n' + Util.progressBar(data.list.length, data.list.length, 35) + ' ✅\n```' + `${done}`);
             } else if (interaction.commandName === 'lang') {
                 let lang: string = interaction.options.get('language')?.value as string;
                 if (['zh', 'en'].includes(lang)) {

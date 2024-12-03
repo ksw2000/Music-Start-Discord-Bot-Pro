@@ -1,27 +1,24 @@
 import ytdl from '@distube/ytdl-core';
 
-export class MusicInfo {
-    url: string;
-    title: string;
-    likes: number;
-    viewCount: number;
-    playCounter: number;    // How many times the user played this song.
+export interface CachedMusicInfo {
+    u: string;  // url
+    n: string;  // name
+}
 
-    constructor(url: string, title: string, likes: number, viewCount: number, playCounter: number = 0) {
-        this.url = url;
-        this.title = title;
-        this.likes = likes;
-        this.viewCount = viewCount;
-        this.playCounter = playCounter;
+export class MusicInfo {
+    constructor(public url: string, public title: string, public likes: number, public viewCount: number, public playCounter: number = 0) { }
+
+    static fromDetails(info: ytdl.videoInfo) {
+        const detail: ytdl.MoreVideoDetails = info.videoDetails;
+        if (!detail.videoId) return null;
+        const url = `https://www.youtube.com/watch?v=${detail.videoId}`;
+        const title = detail.title || "";
+        const viewCount = parseInt(detail.viewCount) || 0;
+        const likes = detail.likes || 0;
+        return new MusicInfo(url, title, likes, Number(viewCount));
     }
 
-    static fromDetails(ytdlInfo: ytdl.videoInfo) {
-        let detail: ytdl.MoreVideoDetails = ytdlInfo.videoDetails;
-        if (!detail.videoId) return null;
-        let url = `https://www.youtube.com/watch?v=${detail.videoId}`;
-        let title = detail.title || "";
-        let viewCount = detail.viewCount || -1;
-        let likes = detail.likes || -1;
-        return new MusicInfo(url, title, likes, Number(viewCount));
+    static fromCache(info: CachedMusicInfo) {
+        return new MusicInfo(info.u, info.n, 0, 0);
     }
 }

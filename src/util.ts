@@ -4,7 +4,7 @@ import {
 } from 'discord.js';
 
 import { Queue } from './queue';
-import { MusicInfo } from './musicInfo';
+import { CachedMusicInfo, MusicInfo } from './musicInfo';
 import { EventEmitter } from 'node:events';
 import ytdl from '@distube/ytdl-core';
 
@@ -57,42 +57,47 @@ export class Util {
         return new EventEmitter();
     }
 
-    static sequentialEnQueueWithBatch(list: Array<string>, queue: Queue, listener?: EventEmitter, batch?: number) {
+    static enQueueCached(list: CachedMusicInfo[], queue: Queue) {
         if (!Array.isArray(list) || list.length == 0) {
-            listener?.emit('error', 'The input JSON array should not be empty.');
             return;
         }
-        let b = batch ?? 20;
+        list.forEach((v) => {
+            queue.add(MusicInfo.fromCache(v));
+        });
+    }
+
+    static sequentialEnQueueWithBatch(list: string[], queue: Queue, listener?: EventEmitter, batch?: number) {
+        if (!Array.isArray(list) || list.length == 0) {
+            listener?.emit('error', 'The input array should not be empty.');
+            return;
+        }
+        const b = batch ?? 20;
         let done = 0;
-        let fail = 0;
-        let total = list.length;
-        let numBatches = Math.ceil(list.length / b);
-        let batchList = Array.from(Array(numBatches).keys());
+        let success = 0;
+        const total = list.length;
+        const numBatches = Math.ceil(list.length / b);
+        const batchList = Array.from(Array(numBatches).keys());
         listener?.emit('progress', 0, total);
         batchList.reduce(async (p, j) => {
             await p.then(async () => {
-                let task: Array<Promise<MusicInfo | null>> = [];
+                let task: Promise<ytdl.videoInfo>[] = [];
                 for (let i = j * b; i < Math.min(b * (j + 1), total); i++) {
                     done++;
-                    task.push(new Promise<MusicInfo | null>((resolve, reject) => {
-                        ytdl.getInfo(list[i]).then(res => {
-                            resolve(MusicInfo.fromDetails(res));
-                        }).catch(reject);
-                    }));
+                    task.push(ytdl.getInfo(list[i]));
                 }
-                await Promise.all(task).then(infoList => {
-                    infoList.forEach(info => {
-                        if (info != null) {
+                await Promise.allSettled(task).then(data => {
+                    data.filter(res => res.status === 'fulfilled').map(res => {
+                        const info = MusicInfo.fromDetails(res.value);
+                        if(info) {
+                            success++;
                             queue.add(info);
-                        } else {
-                            fail++;
                         }
                     });
                     listener?.emit('progress', done, total);
                 }).catch(e => listener?.emit('error', e));
             });
         }, Promise.resolve()).then(() => {
-            listener?.emit('done', total, fail);
+            listener?.emit('done', total, total-success);
         });
     }
 
