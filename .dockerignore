@@ -1,0 +1,10 @@
+**/node_modules/
+**/.git
+**/*.md
+**/.*
+**/_*
+**/dist
+data.json
+demo.gif
+LICENSE
+logo*.png

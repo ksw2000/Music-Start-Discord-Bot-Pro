@@ -1,6 +1,6 @@
 # Music Start Pro
 
-[![NPM version](https://img.shields.io/npm/v/music-start-pro.svg?logo=npm&style=flat-square)](https://www.npmjs.org/package/music-start-pro) ![](https://img.shields.io/github/license/ksw2000/Music-Start-Discord-Bot-Pro?style=flat-square) ![](https://img.shields.io/github/stars/ksw2000/Music-Start-Discord-Bot-Pro?style=flat-square) ![](https://img.shields.io/github/issues/ksw2000/Music-Start-Discord-Bot-Pro?color=yellow&style=flat-square) [![](https://img.shields.io/discord/864220336841162756?style=flat-square)](https://discord.gg/qQM9avGy2R) ![](https://img.shields.io/npm/dt/music-start-pro?color=blue&style=flat-square)
+[![NPM version](https://img.shields.io/npm/v/music-start-pro.svg?logo=npm&style=flat-square)](https://www.npmjs.org/package/music-start-pro) ![](https://img.shields.io/github/license/ksw2000/Music-Start-Discord-Bot-Pro?style=flat-square) ![](https://img.shields.io/github/stars/ksw2000/Music-Start-Discord-Bot-Pro?style=flat-square) ![](https://img.shields.io/github/issues/ksw2000/Music-Start-Discord-Bot-Pro?color=yellow&style=flat-square&logo=github) [![](https://img.shields.io/discord/864220336841162756?style=flat-square&logo=discord)](https://discord.gg/qQM9avGy2R) ![](https://img.shields.io/npm/dt/music-start-pro?color=blue&style=flat-square)
 
 ![](https://i.imgur.com/I1cH4Uc.png)
 
@@ -114,7 +114,9 @@ npm run lint
 
 ## Deploy by Docker
 
-Build docker image by using Dockerfile in `docker/Dockerfile` or pull the docker image.
+ [![Docker Image Version](https://img.shields.io/docker/v/ksw2000/music-start?logo=docker&style=flat-square&color=1c77ed)](https://hub.docker.com/r/ksw2000/music-start)
+
+Build docker image by using [Dockerfile](./Dockerfile) or pull the docker image from [Docker Hub](https://hub.docker.com/r/ksw2000/music-start).
 
 ```sh
 docker build -t my-music-start .
@@ -124,5 +126,12 @@ docker build -t my-music-start .
 docker pull ksw2000/music-start
 ```
 
- 
+Run container
 
+```sh
+docker run -d ksw2000/music-start <discord-bot-token>
+
+# or attach volume
+
+docker run -v <volume>:/usr/src/app -d ksw2000/music-start <discord-bot-token>
+```
