@@ -155,7 +155,7 @@ export class Bucket {
             // if there is no one in voice channel when the player is playing, pause.
             if (this.voiceChannel != null && this.voiceChannel?.members.size <= 1) {
                 player.pause();
-                const channel  = this.interaction?.channel as GuildTextBasedChannel | null | undefined;
+                const channel = this.interaction?.channel as GuildTextBasedChannel | null | undefined;
                 channel?.send((messages.paused_because_no_one_in_channel as langMap)[this.lang]);
             }
         });
@@ -255,12 +255,19 @@ export class Bucket {
             throw ((messages.robot_not_in_voice_channel as langMap)[this.lang]);
         }
 
+        const info = await ytdl.getInfo(music.url);
+        const updatedMusicInfo = MusicInfo.fromDetails(info);
+        if (updatedMusicInfo) {
+            music.likes = updatedMusicInfo.likes;
+            music.viewCount = updatedMusicInfo.viewCount;
+        }
+
         // if the user not joined voice channel yet
         const stream = ytdl(music.url, {
             quality: 'highestaudio',
             filter: 'audioonly',
             highWaterMark: 1 << 25, // 32 MB
-            begin: begin ? begin : 0,
+            begin: begin || 0,
             // begin: This option is not very reliable for non-live videos
         });
 
