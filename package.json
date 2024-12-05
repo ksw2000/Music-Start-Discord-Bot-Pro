@@ -15,7 +15,7 @@
     "url": "https://github.com/ksw2000/Music-Start-Discord-Bot-Pro.git"
   },
   "dependencies": {
-    "@discordjs/voice": "^0.17.0",
+    "@discordjs/voice": "^0.18.0",
     "@distube/ytdl-core": "^4.15.1",
     "@types/node": "^22.1.0",
     "commander": "^12.1.0",
