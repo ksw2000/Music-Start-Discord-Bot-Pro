@@ -29,7 +29,7 @@
     "ms": "dist/cli.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "npx tsc",
     "start": "npx ts-node src/cli.ts -d",
     "lint": "npx eslint src/**.ts --fix"
   },
