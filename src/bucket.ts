@@ -250,7 +250,7 @@ export class Bucket {
      * @param music
      * @param begin start at `begin` milliseconds
      */
-    private async play(music: MusicInfo, begin?: number): Promise<void> {
+    private async play(music: MusicInfo): Promise<void> {
         if (this.connection === null) {
             throw ((messages.robot_not_in_voice_channel as langMap)[this.lang]);
         }
@@ -263,27 +263,18 @@ export class Bucket {
         }
 
         // if the user not joined voice channel yet
-        const stream = ytdl(music.url, {
+        const stream = ytdl.downloadFromInfo(info, {
             quality: 'highestaudio',
             filter: 'audioonly',
             highWaterMark: 1 << 25, // 32 MB
-            begin: begin || 0,
-            // begin: This option is not very reliable for non-live videos
+            liveBuffer: 1 << 22, // 4 MB
         });
 
-        // ytdlInfo seems to be expired after a period of time
-        // const stream = ytdl.downloadFromInfo(music.ytdlInfo, {...});
+        // live music is not supported
+        // check by info.videoDetails.isLiveContent
 
-        // DEBUG
-        // number - Chunk length in bytes or segment number.
-        // number - Total bytes or segments downloaded.
-        // number - Total bytes or segments.
-        // stream.on('progress', (chunkSize, downloadedSize, totalSize) => {
-        //     this._playerDownloadedChunk = downloadedSize;
-        //     this._playerTotalChunk = totalSize;
-        // });
-
-        this.resource = createAudioResource(stream, {
+        // 256 kbps * 4s -> 2 ^ 17
+        this.resource = createAudioResource(Util.bufferStream(stream, 1 << 17), {
             inputType: StreamType.Arbitrary,
             inlineVolume: true,
         });
@@ -295,11 +286,7 @@ export class Bucket {
         } catch (e) {
             const channel = this.interaction?.channel as GuildTextBasedChannel | null | undefined;
             channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang], `${e}`, true));
-            console.error("line274 bucket.ts play() error", e, "try to reset player");
-            this.player = this.createPlayer();
-            if (this.interaction != null) {
-                this.connect(this.interaction as Interaction);
-            }
+            console.error("bucket.ts play() error", e);
             channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang],
                 `${(messages.player_error as langMap)[this.lang]} ${Util.randomCry()}`, true));
         }

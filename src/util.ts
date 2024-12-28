@@ -7,6 +7,7 @@ import { Queue } from './queue';
 import { CachedMusicInfo, MusicInfo } from './musicInfo';
 import { EventEmitter } from 'node:events';
 import ytdl from '@distube/ytdl-core';
+import internal, { PassThrough } from 'node:stream';
 
 export class Util {
     static randomHappy() {
@@ -88,7 +89,7 @@ export class Util {
                 await Promise.allSettled(task).then(data => {
                     data.filter(res => res.status === 'fulfilled').map(res => {
                         const info = MusicInfo.fromDetails(res.value);
-                        if(info) {
+                        if (info) {
                             success++;
                             queue.add(info);
                         }
@@ -97,7 +98,7 @@ export class Util {
                 }).catch(e => listener?.emit('error', e));
             });
         }, Promise.resolve()).then(() => {
-            listener?.emit('done', total, total-success);
+            listener?.emit('done', total, total - success);
         });
     }
 
@@ -112,6 +113,40 @@ export class Util {
         }
         content += (all == 0) ? ']' : `] ${current} / ${all}`;
         return content;
+    }
+
+    static bufferStream(sourceStream: internal.Readable, requiredBufferSize: number): internal.Readable {
+        const bufferedStream = new PassThrough();
+        const bufferChunks: Buffer[] = [];
+        let bufferLength = 0;
+
+        sourceStream.on('data', async (chunk) => {
+            bufferChunks.push(chunk);
+            bufferLength += chunk.length;
+
+            if (bufferLength >= requiredBufferSize) {
+                while (bufferChunks.length > 0) {
+                    const chunk = bufferChunks.shift();
+                    if (chunk) {
+                        bufferedStream.write(chunk, () => {
+                            bufferLength -= chunk.length;
+                        });
+                    }
+                }
+            }
+        });
+
+        sourceStream.on('end', async () => {
+            while (bufferChunks.length > 0) {
+                const chunk = bufferChunks.shift();
+                if (chunk) {
+                    bufferedStream.write(chunk);
+                }
+            }
+            bufferedStream.end();
+        });
+
+        return bufferedStream
     }
 }
 
