@@ -189,18 +189,14 @@ export class Bucket {
          */
 
         player.on('error', (error) => {
-            console.log('播放器發生錯誤!');
-            console.log(error.message);
-            console.log(error.name);
-            console.log(error.stack);
+            console.error('unexpected error in player');
+            console.error(error.message);
+            console.error(error.name);
+            console.error(error.stack);
             this._playerErrorLock = true;
             const channel = this.interaction?.channel as GuildTextBasedChannel | null | undefined;
             channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang],
                 `${(messages.player_error as langMap)[this.lang]} ${Util.randomCry()}`, true));
-            console.log('Reset player');
-            this.player = this.createPlayer();
-            // disconnect from voice channel
-            this.disconnect();
         });
 
         // this block handles
@@ -211,11 +207,7 @@ export class Bucket {
             if (newState.status === AudioPlayerStatus.Idle && oldState.status !== AudioPlayerStatus.Idle) {
                 // If the Idle state is entered from a non-Idle state, it means that an audio resource has finished playing.
                 // The queue is then processed to start playing the next track, if one is available.
-                if (this._playerErrorLock) {
-                    // error occurred
-                    // fake finish()
-                    console.log('Error line169 bucket.ts');
-                } else {
+                if (!this._playerErrorLock) {
                     // real finish()
                     // update play counter
                     // if call removeAll(), the current will out of bound.
@@ -235,7 +227,6 @@ export class Bucket {
                         }
                     });
                 }
-
                 this._playerErrorLock = false;
             } else if (newState.status === AudioPlayerStatus.Playing) {
                 // onstart()
@@ -248,7 +239,6 @@ export class Bucket {
     /**
      * Plays music on `this.player` by given MusicInfo.
      * @param music
-     * @param begin start at `begin` milliseconds
      */
     private async play(music: MusicInfo): Promise<void> {
         if (this.connection === null) {
@@ -272,6 +262,11 @@ export class Bucket {
 
         // live music is not supported
         // check by info.videoDetails.isLiveContent
+        if (info.videoDetails.isLiveContent) {
+            const channel = this.interaction?.channel as GuildTextBasedChannel | null | undefined;
+            channel?.send(Util.createEmbedMessage((messages.error as langMap)[this.lang], "Live video is not supported!", true));
+            return;
+        }
 
         // 256 kbps * 4s -> 2 ^ 17
         this.resource = createAudioResource(Util.bufferStream(stream, 1 << 17), {
