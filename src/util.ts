@@ -120,7 +120,7 @@ export class Util {
         const bufferChunks: Buffer[] = [];
         let bufferLength = 0;
 
-        sourceStream.on('data', async (chunk) => {
+        sourceStream.on('data', (chunk) => {
             bufferChunks.push(chunk);
             bufferLength += chunk.length;
 
@@ -136,7 +136,7 @@ export class Util {
             }
         });
 
-        sourceStream.on('end', async () => {
+        sourceStream.on('end', () => {
             while (bufferChunks.length > 0) {
                 const chunk = bufferChunks.shift();
                 if (chunk) {
